@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>蝶 · 臺灣蝴蝶</title>
+<meta name="description" content="臺灣蝴蝶：故事、物種、延伸作品與保育願景。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="noise" aria-hidden="true"></div>
+
+<!-- 0. 開場 -->
+<div class="intro" id="intro" aria-hidden="true">
+  <p class="intro-kicker">LISTEN</p>
+  <p class="intro-logo">蝶</p>
+  <p class="intro-sub">聽見翅膀的聲音</p>
+</div>
+
+<!-- 頂部選單 -->
+<header class="nav" id="nav">
+  <a class="brand" href="#hero">蝶</a>
+  <nav aria-label="主選單">
+    <ul class="menu" id="menu">
+      <li><a href="#hero">首頁</a></li>
+      <li><a href="#story">摘要</a></li>
+      <li><a href="#garden">介紹</a></li>
+      <li><a href="#play1">互動1</a></li>
+      <li><a href="#play2">互動2</a></li>
+      <li><a href="#play3">互動3</a></li>
+    </ul>
+  </nav>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="開啟選單"><span></span><span></span><span></span></button>
+</header>
+
+<main>
+
+<!-- 1. 首頁：LOGO 長出植物 → 蝴蝶飛出，會被滑鼠吸引 -->
+<section id="hero" class="hero" data-sec>
+  <h1 class="sr-only">蝶</h1>
+  <!-- 植物和字都畫在同一張 SVG 裡，由 JS 依字形長出來 -->
+  <svg class="logo" id="logo" viewBox="-250 -170 1500 1340" aria-hidden="true">
+    <g id="logoBack"></g>
+    <text id="logoText" x="500" y="830" text-anchor="middle">蝶</text>
+    <g id="logoFront"></g>
+  </svg>
+  <div class="flies" id="flies" aria-hidden="true"></div>
+  <div class="hero-text">
+    <p class="lead">【待補】一句話主題標語</p>
+    <p class="hint">移動滑鼠，蝴蝶會跟著你</p>
+  </div>
+</section>
+
+<!-- 2. 故事 -->
+<section id="story" class="sec" style="--z:2" data-sec>
+  <div class="wrap narrow">
+    <div class="sys">
+      <p data-type>&gt; 正在接收訊號……</p>
+      <p class="warn" data-type>&gt; 偵測到翅膀振動頻率</p>
+    </div>
+    <div class="story-body">
+      <p data-type>【待補】故事第一段。</p>
+      <p data-type>【待補】故事第二段。</p>
+      <p data-type>【待補】故事第三段。</p>
+      <p class="accent" data-type>【待補】故事結尾句。</p>
+    </div>
+  </div>
+  <div class="glow" aria-hidden="true"></div>
+</section>
+
+<!-- 3. 介紹：旋轉花園 -->
+<section id="garden" class="sec garden" style="--z:3" data-sec aria-roledescription="輪播" aria-label="蝴蝶介紹">
+  <div class="g-backs" id="gBacks" aria-hidden="true"></div>
+  <div class="g-spot" id="gSpot" aria-hidden="true"></div>
+
+  <!-- 文字固定在上方，不跟著轉 -->
+  <div class="g-text wait" id="gText" aria-live="polite">
+    <span class="pill" id="gNo">NO.01 / 08</span>
+    <h2 id="gName">大白斑蝶</h2>
+    <p class="latin" id="gLatin">IDEA LEUCONOE · DANAINAE</p>
+    <p class="g-desc" id="gDesc">【待補】約 40 字的介紹。</p>
+    <p class="g-meta"><span>翼展 <b id="gWing">約 120–150mm</b></span><span>寄主 <b id="gHost">爬森藤</b></span></p>
+  </div>
+
+  <!-- 轉盤舞台：開場時像傘面一樣旋轉、倒下，變成畫面下方的圓弧 -->
+  <div class="g-stage" id="gStage" tabindex="0" aria-label="旋轉花園，可用左右方向鍵或拖曳切換">
+    <div class="g-disc" id="gDisc" aria-hidden="true"></div>
+    <div class="g-ring" id="gRing"></div>
+  </div>
+  <div class="g-near" id="gNear" aria-hidden="true"></div>
+
+  <div class="g-ctrl">
+    <button type="button" id="gPrev" aria-label="上一隻">‹</button>
+    <div class="g-dots" id="gDots"></div>
+    <button type="button" id="gNext" aria-label="下一隻">›</button>
+    <button type="button" class="g-play" id="gPlay" aria-pressed="true" aria-label="暫停自動輪播"><span></span></button>
+  </div>
+</section>
+
+<!-- 4. 互動1 -->
+<section id="play1" class="sec" style="--z:4" data-sec>
+  <div class="wrap">
+    <div class="head rv"><h2>互動 1</h2><p>INTERACTION 01</p></div>
+    <div class="slot rv">【待補】互動內容</div>
+  </div>
+</section>
+
+<!-- 5. 互動2 -->
+<section id="play2" class="sec dim" style="--z:5" data-sec>
+  <div class="glow warm" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="head rv"><h2>互動 2</h2><p>INTERACTION 02</p></div>
+    <div class="slot rv">【待補】互動內容</div>
+  </div>
+</section>
+
+<!-- 6. 互動3 -->
+<section id="play3" class="sec" style="--z:6" data-sec>
+  <div class="wrap">
+    <div class="head rv"><h2>互動 3</h2><p>INTERACTION 03</p></div>
+    <div class="slot rv">【待補】互動內容</div>
+  </div>
+</section>
+
+<!-- 7. APP -->
+<section id="app" class="sec black" style="--z:7" data-sec>
+  <div class="wrap center rv">
+    <span class="pill accent-pill">&gt; SYSTEM READY</span>
+    <h2>【待補】APP 名稱</h2>
+    <div class="glass app-desc">
+      <p>【待補】APP 介紹第一句。</p>
+      <p>【待補】APP 介紹第二句。</p>
+    </div>
+    <ul class="feat">
+      <li>【待補】功能一</li>
+      <li>【待補】功能二</li>
+      <li>【待補】功能三</li>
+    </ul>
+    <a class="cta" href="#">立即體驗</a>
+  </div>
+</section>
+
+<!-- 8. 照片 -->
+<section id="gallery" class="sec" style="--z:8" data-sec>
+  <div class="wrap">
+    <div class="head rv"><h2>照片</h2><p>PHOTOS</p></div>
+  </div>
+  <div class="reel">
+    <ul class="reel-track" id="reel">
+      <!-- 暫用物種插圖，之後換成作品照片 -->
+      <li><img src="assets/idea-700.webp" alt="大白斑蝶" loading="lazy"></li>
+      <li><img src="assets/euploea-700.webp" alt="小紫斑蝶" loading="lazy"></li>
+      <li><img src="assets/tirumala-700.webp" alt="淡紋青斑蝶" loading="lazy"></li>
+      <li><img src="assets/hypolimnas-700.webp" alt="幻蛺蝶" loading="lazy"></li>
+      <li><img src="assets/kallima-700.webp" alt="枯葉蝶" loading="lazy"></li>
+      <li><img src="assets/hebomoia-700.webp" alt="橙端粉蝶" loading="lazy"></li>
+      <li><img src="assets/demoleus-700.webp" alt="無尾鳳蝶" loading="lazy"></li>
+      <li><img src="assets/polytes-700.webp" alt="玉帶鳳蝶" loading="lazy"></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9. 團隊 -->
+<section id="team" class="sec dim" style="--z:9" data-sec>
+  <div class="wrap">
+    <div class="head rv"><h2>團隊</h2><p>TEAM</p></div>
+    <ul class="team">
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 10. 願景 -->
+<section id="vision" class="sec deep" style="--z:10" data-sec>
+  <div class="wrap narrow center">
+    <h2 class="big rv">【待補】願景標題</h2>
+    <div class="vision-body rv">
+      <p data-type>【待補】願景第一段。</p>
+      <p data-type>【待補】願景第二段。</p>
+      <p class="accent" data-type>【待補】結語。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- 11. 頁尾 -->
+<footer class="sec foot" style="--z:11">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div><h5>Project</h5><p class="foot-name">蝶</p><p>【待補】系所／指導老師</p></div>
+      <div><h5>Explore</h5><a href="#garden">介紹</a><a href="#play1">互動1</a><a href="#play2">互動2</a><a href="#play3">互動3</a></div>
+      <div><h5>Connect</h5><p>【待補】Email</p><a href="#">【待補】Instagram</a></div>
+    </div>
+    <div class="copy"><p>Copyright © 2026 蝶. All Rights Reserved.</p><p>本網站為學術製作成果，圖片與內容版權歸原作者所有。</p></div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
