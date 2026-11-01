@@ -1,0 +1,426 @@
+/* ============ Token ============ */
+:root{
+  --paper:#F6F4EF;           /* 網站底色：淺白 */
+  --paper-2:#EEEBE3;
+  --ink:#24211D; --ink-soft:#5E574D; --ink-mute:#9A9286;
+  --accent:#D9772F;          /* 主色：蝴蝶橘，可自行替換 */
+  --green:#5E8C5A;
+  --dark:#1C1A17;            /* 頁尾深色 */
+  --line:rgba(36,33,29,.12);
+  --serif:'Noto Serif TC',serif;
+  --sans:'Inter','Noto Sans TC',sans-serif;
+  --gut:clamp(20px,5vw,48px);
+  --fifo:cubic-bezier(.2,.9,.8,.1);   /* 快進快出：起步快、中段放慢、收尾快 */
+}
+
+/* ============ Base ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body.locked{overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+button{background:none;border:0;color:inherit;cursor:pointer;font:inherit}
+h1,h2,h4{font-family:var(--serif);line-height:1.2}
+h2{font-size:clamp(36px,5vw,64px);font-weight:900;color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 背景：懸浮粒子＋轉場漣漪（canvas）、細顆粒紙紋 */
+.dust{position:fixed;inset:0;z-index:5;width:100%;height:100%;pointer-events:none}
+.noise{position:fixed;inset:0;z-index:90;pointer-events:none;opacity:.07;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ============ 開場：待機 → 進度條 → START ============ */
+.intro{position:fixed;inset:0;z-index:100;background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center;transition:opacity 1s ease,visibility 1s}
+.intro.out{opacity:0;visibility:hidden;pointer-events:none}
+.intro-c{display:flex;flex-direction:column;align-items:center;gap:22px;padding:0 var(--gut);text-align:center}
+.intro-kicker{font-size:12px;letter-spacing:.42em;color:var(--ink-mute)}
+.intro-logo{width:min(560px,80vw);height:auto;animation:idle 3.6s ease-in-out infinite}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.intro-load{display:flex;align-items:center;gap:16px;margin-top:18px}
+.bar{position:relative;width:min(320px,60vw);height:2px;background:var(--line)}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .25s ease}
+/* 停在進度條前端的蝴蝶，慢慢開合翅膀 */
+.perch{position:absolute;top:-30px;left:0;width:44px;height:36px;margin-left:-22px;transition:left .25s ease}
+.pct{min-width:44px;font-size:12px;letter-spacing:.15em;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.start{position:relative;display:inline-flex;align-items:center;gap:14px;margin-top:10px;padding:14px 38px;border:1px solid var(--ink);border-radius:999px;overflow:hidden;
+  font-size:14px;letter-spacing:.4em;font-weight:500;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .6s ease,transform .6s ease,color .4s ease,letter-spacing .4s ease}
+.start::before{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:0 50%;transition:transform .45s cubic-bezier(.7,0,.2,1)}
+.start>*{position:relative}
+.start i{font-style:normal;transition:transform .4s ease}
+.start.ready{opacity:1;transform:none;pointer-events:auto}
+.start.ready:not(:hover){animation:breath 2.4s ease-in-out infinite}
+@keyframes breath{50%{box-shadow:0 0 0 8px rgba(36,33,29,.06)}}
+.start:hover,.start:focus-visible{color:var(--paper);letter-spacing:.5em}
+.start:hover::before,.start:focus-visible::before{transform:scaleX(1)}
+.start:hover i{transform:translateX(6px)}
+
+/* ============ 頂部選單（半透明） ============ */
+/* 固定懸浮、沒有框：首頁時淡淡的霧面，從「摘要」開始完全透明 */
+.nav{position:fixed;top:0;left:0;right:0;z-index:80;height:68px;display:flex;align-items:center;justify-content:flex-end;padding:0 var(--gut);
+  background:rgba(246,244,239,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  opacity:0;transform:translateY(-100%);transition:opacity .6s ease,transform .6s ease,background .5s ease,backdrop-filter .5s ease,color .4s ease}
+.nav.clear{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+.nav .menu a,.nav .burger{text-shadow:0 0 12px rgba(246,244,239,.9)}
+.nav.on-dark .brand,.nav.on-dark .menu a,.nav.on-dark .burger{text-shadow:0 0 12px rgba(28,26,23,.8)}
+.nav.visible{opacity:1;transform:none}
+.brand{position:absolute;left:var(--gut);top:50%;transform:translate(0,-50%);line-height:0;
+  transition:opacity .35s ease}
+.nav.fold .brand{opacity:0}
+/* 頂部選單 hover：彈簧感，小圓點衝過頭再彈回；文字微微彈起 */
+.menu{--spring:cubic-bezier(.34,1.56,.64,1)}
+@supports (transition-timing-function:linear(0,1)){
+  .menu{--spring:linear(0,.009,.035 2.1%,.141,.281 6.7%,.723 12.9%,.938 16.7%,1.017,1.077,1.121,1.149 24.3%,1.159,1.163,1.161,1.154 29.9%,1.129 32.8%,1.051 39.6%,1.017 43.1%,.991,.977 51%,.974 53.8%,.975 57.1%,.997 69.8%,1.003 76.9%,1.004 83.8%,1)}
+}
+.menu .dot{transition:transform .9s var(--spring),opacity .3s ease}
+.nav:not(.compact):not(.fold) .menu a{transition:color .3s ease,opacity .4s ease,transform .7s var(--spring)}
+.nav:not(.compact):not(.fold) .menu a:hover{transform:translateY(-3px)}
+.nav.snap .menu-wrap,.nav.snap .menu a,.nav.snap .menu-scrim,.nav.snap .brand{transition:none!important}                                     /* 收合時淡出、換位置後再淡入 */
+.nav.compact .brand{left:50%;transform:translate(-50%,-50%)}
+.brand img{height:26px;width:auto;transition:filter .4s ease}
+.nav.on-dark:not(.open) .brand img{filter:invert(1)}
+.menu{position:relative;display:flex;gap:clamp(14px,2vw,34px)}
+.menu a{display:block;padding:8px 2px;font-size:14px;letter-spacing:.12em;color:var(--ink-soft);
+  transition:color .5s linear,opacity .4s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
+/* 收合前：橫排的項目依序往上淡出；展開後依序淡入 */
+.nav.fold:not(.compact) .menu a{opacity:0;transform:translateY(-10px)}
+.nav.fold:not(.compact) .dot{opacity:0}
+.menu a:hover,.menu a.on{color:var(--ink)}
+/* 小圓點：滑到哪個字就移到它下面，移動中拉長＋動態模糊（選單、頁尾共用） */
+.dot{position:absolute;left:0;top:0;width:6px;height:6px;margin:-3px 0 0 -3px;pointer-events:none;opacity:0;
+  transition:transform .8s var(--fifo),opacity .3s ease}
+.dot i{display:block;width:100%;height:100%;border-radius:50%;background:var(--accent);transition:transform .7s var(--fifo),filter .7s var(--fifo)}
+.dot.show{opacity:1}
+
+.burger{display:flex;align-items:center;gap:10px;height:44px;padding:0 4px;opacity:0;pointer-events:none;transform:translateX(12px);transition:opacity .4s ease,transform .4s ease}
+.burger-txt{font-size:12px;letter-spacing:.25em;font-weight:500}
+.burger-ico{position:relative;width:26px;height:12px}
+.burger-ico i{position:absolute;left:0;right:0;height:1.5px;background:currentColor;transition:transform .35s ease,top .35s ease}
+.burger-ico i:first-child{top:2px}
+.burger-ico i:last-child{top:9px}
+.nav.open .burger-ico i:first-child{top:5px;transform:rotate(45deg)}
+.nav.open .burger-ico i:last-child{top:5px;transform:rotate(-45deg)}
+.menu a em{display:none;font-style:normal}
+.nav.compact .burger{opacity:1;pointer-events:auto;transform:none}
+.burger{position:relative;z-index:3}
+/* 收合後：點開的選單佔畫面 80%，左邊留白區和叉叉都能關閉 */
+.menu-scrim{position:fixed;inset:0;z-index:1;background:rgba(28,26,23,.28);opacity:0;pointer-events:none;transition:opacity .5s ease}
+.nav.compact .menu-wrap{position:fixed;z-index:2;top:0;right:0;bottom:0;width:80vw;display:flex;align-items:center;justify-content:flex-start;padding:0 clamp(48px,12vw,200px);color:var(--ink);
+  background:var(--paper);transform:translateX(100%);transition:transform .7s cubic-bezier(.7,0,.2,1);text-shadow:none}
+.nav.compact .menu{flex-direction:column;align-items:flex-start;text-align:left;gap:clamp(2px,1vh,10px)}
+.nav.compact .menu a{display:flex;align-items:baseline;gap:16px;font-family:var(--serif);font-weight:500;font-size:clamp(18px,2.6vh,24px);letter-spacing:.12em;line-height:1.4;padding:6px 0 10px;color:var(--ink-mute);text-shadow:none;
+  opacity:0;transform:translateX(40px);transition:color .5s linear,opacity .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.nav.compact .menu a em{display:inline;min-width:2em;font-family:var(--sans);font-size:11px;font-weight:400;letter-spacing:.2em;color:var(--ink-mute)}
+.nav.compact .menu a:hover,.nav.compact .menu a.on{color:var(--ink)}
+.nav.compact.open .menu-wrap{transform:none}
+.nav.compact.open .menu a{opacity:1;transform:none}
+.nav.compact.open .menu li:nth-child(1) a{transition-delay:0s,.25s,.25s}
+.nav.compact.open .menu li:nth-child(2) a{transition-delay:0s,.31s,.31s}
+.nav.compact.open .menu li:nth-child(3) a{transition-delay:0s,.37s,.37s}
+.nav.compact.open .menu li:nth-child(4) a{transition-delay:0s,.43s,.43s}
+.nav.compact.open .menu li:nth-child(5) a{transition-delay:0s,.49s,.49s}
+.nav.compact.open .menu li:nth-child(6) a{transition-delay:0s,.55s,.55s}
+.nav.compact.open .menu-scrim{opacity:1;pointer-events:auto}
+.nav.open{color:var(--ink);background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+.nav.on-dark{color:#F1EEE6}
+.nav.on-dark.open{color:var(--ink)}
+
+/* ============ Section ============ */
+main{position:relative;z-index:2}
+.sec{position:relative;padding:clamp(110px,15vh,170px) 0}
+/* 漣漪轉場：首頁固定在後面，摘要固定在畫面上、以圓形擴散出來蓋過首頁；轉完後一般捲動 */
+.rip-track{position:relative;z-index:2}
+.story{position:sticky;top:0;min-height:100vh;display:flex;flex-direction:column;justify-content:center;background:var(--paper);overflow:hidden}
+.story>.wrap{width:100%}
+.wrap{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:0 var(--gut)}
+.wrap.narrow{max-width:900px}
+.wrap.center{display:flex;flex-direction:column;align-items:center;text-align:center}
+.head{text-align:center;margin-bottom:48px}
+.head p{margin-top:12px;font-size:13px;letter-spacing:.3em;color:var(--ink-mute)}
+.kicker{font-size:13px;letter-spacing:.3em;color:var(--ink-mute);margin-bottom:24px}
+.pill{display:inline-block;padding:4px 14px;border:1px solid var(--line);border-radius:999px;font-size:12px;letter-spacing:.1em;color:var(--ink-soft);background:rgba(255,255,255,.4)}
+.accent{color:var(--accent);font-weight:700}
+.slot{aspect-ratio:16/9;width:min(100%,calc((100vh - 400px) * 16 / 9));margin:0 auto;border:1px dashed rgba(36,33,29,.25);border-radius:24px;display:flex;align-items:center;justify-content:center;color:var(--ink-mute);letter-spacing:.1em;background:rgba(255,255,255,.35)}
+/* 靜態的大數字，和會動的插圖形成對比 */
+.big-no{position:absolute;z-index:1;top:4%;left:var(--gut);font-family:var(--serif);font-weight:900;font-size:clamp(120px,20vw,300px);line-height:1;color:transparent;-webkit-text-stroke:1px rgba(36,33,29,.18)}
+.big-no.right{left:auto;right:var(--gut)}
+.rv{opacity:0;transform:translateY(50px);transition:opacity 1s ease,transform 1s ease}
+.rv.in{opacity:1;transform:none}
+
+/* ============ 1. 首頁 ============ */
+.hero{position:fixed;inset:0;z-index:1;overflow:hidden;color:var(--ink);background:var(--paper);transform-origin:50% 50%}
+.logo{position:absolute;left:50%;top:46%;width:min(94vw,150vh);height:auto;transform:translate(-50%,-50%);overflow:visible}
+#logoText{opacity:0;transition:opacity 1.6s ease}
+.hero.grow #logoText{opacity:1}
+/* 俯視、光從左上方來：貼在紙面上的植物只有很短的影子 */
+#logoBack,#logoFront{filter:drop-shadow(3px 5px 3px rgba(60,40,20,.24))}
+.stem{fill:none;stroke:#4A3A2C;stroke-linecap:round}
+.pop{transform:scale(0)}
+.sway{animation:sway var(--sw,6s) ease-in-out infinite alternate;animation-delay:var(--swd,0s)}
+@keyframes sway{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+
+.flies{position:absolute;inset:0;pointer-events:none}
+.fly{position:absolute;left:0;top:0;width:0;height:0;will-change:transform;opacity:0;transition:opacity .6s ease}
+.fly.on{opacity:1}
+.fly>div{position:absolute;left:-42px;top:-34px;width:84px;height:68px}
+/* 影子：和蝴蝶同步振翅，落在地上的位置依飛行高度往右下偏 */
+.fly .fsh{filter:brightness(0) blur(var(--sb,4px));opacity:var(--so,.16)}
+.hero-text{position:absolute;left:0;right:0;bottom:clamp(28px,6vh,64px);text-align:center;pointer-events:none;opacity:0;transition:opacity 1.2s ease 4s}
+.hero.grow .hero-text{opacity:1}
+.lead{font-family:var(--serif);font-style:italic;font-size:clamp(16px,1.7vw,22px);letter-spacing:.2em}
+.hint{margin-top:10px;font-size:12px;letter-spacing:.2em;color:var(--ink-mute)}
+
+/* ============ 蝴蝶（立體振翅） ============ */
+.bf{position:relative;width:100%;height:100%;perspective:320px}
+.bf-3d{position:absolute;inset:0;transform-style:preserve-3d}
+.bf svg{position:absolute;top:0;height:100%;overflow:visible}
+.bf .wl,.bf .wr{width:50%;transition:transform .5s ease}
+.bf .wl{left:0;transform-origin:100% 50%}
+.bf .wr{left:50%;transform-origin:0 50%}
+.bf .bd{left:0;width:100%}
+.flap .wl{animation:flapL var(--flap,.22s) ease-in-out infinite alternate}
+.flap .wr{animation:flapR var(--flap,.22s) ease-in-out infinite alternate}
+@keyframes flapL{from{transform:rotateY(-8deg)}to{transform:rotateY(72deg)}}
+@keyframes flapR{from{transform:rotateY(8deg)}to{transform:rotateY(-72deg)}}
+/* 停下來曬太陽：偶爾慢慢開合一次 */
+.bask .wl{animation:baskL 5s ease-in-out infinite}
+.bask .wr{animation:baskR 5s ease-in-out infinite}
+@keyframes baskL{0%,70%,100%{transform:rotateY(0)}80%{transform:rotateY(55deg)}}
+@keyframes baskR{0%,70%,100%{transform:rotateY(0)}80%{transform:rotateY(-55deg)}}
+
+/* ============ 鼠標：大白斑蝶的一生（無影子） ============ */
+@media (hover:hover) and (pointer:fine){
+  body.has-cursor,body.has-cursor a,body.has-cursor button,body.has-cursor [tabindex]{cursor:none}
+}
+.cursor{position:fixed;left:0;top:0;z-index:120;pointer-events:none;display:none}
+body.has-cursor .cursor{display:block}
+.cursor .pt{position:fixed;left:0;top:0;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:var(--ink);opacity:.7}
+.cursor .ring{position:fixed;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:1px solid var(--accent);opacity:0;transform:scale(.5);transition:opacity .25s,transform .25s}
+.cursor.link .ring{opacity:.8;transform:scale(1)}
+.cursor.dotmode .pt{opacity:0}
+.critter{position:fixed;left:0;top:0;width:0;height:0}
+.critter>*{position:absolute}
+.cdot,.cat,.pupa,.cbf{opacity:0}
+/* 首頁：帶動態模糊的圓點，越快拉得越長 */
+.cdot{left:0;top:0;width:0;height:0}
+.cdot i{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 38% 35%,#5A5249,#24211D 60%,#0F0D0B);will-change:transform,filter}
+.cdot b{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;border:1.2px solid #24211D;opacity:0;will-change:transform}   /* 殘影：圓圈線條沿路徑位移 */
+/* 幼蟲（俯視）：黑色體節、白色環紋、側面紅點、四對黑色長肉棘 */
+.cat{left:-40px;top:-14px;width:80px;height:28px}
+.cat svg{width:100%;height:100%;overflow:visible}
+.cat .seg{transform-box:fill-box;transform-origin:50% 50%}
+.cursor.moving .cat .seg{animation:crawl .6s ease-in-out infinite;animation-delay:calc(var(--k) * -.08s)}
+@keyframes crawl{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.08,.92)}}
+/* 蛹：金色，從尾端倒吊著 */
+.pupa{left:-17px;top:-6px;width:34px;height:58px;transform-origin:50% 0}
+.pupa svg{width:100%;height:100%;overflow:visible;animation:hang 2.6s ease-in-out infinite alternate;transform-origin:50% 4%}
+.cursor.moving .pupa svg{animation-duration:.6s}
+@keyframes hang{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+/* 成蝶 */
+.cbf{left:-40px;top:-33px;width:80px;height:66px}
+.cbf .bf-3d{transition:transform .5s cubic-bezier(.5,0,.2,1)}
+/* 停下來：合翅，轉成側面 */
+.cursor.rest .cbf .bf-3d{transform:rotateY(78deg)}
+.cursor.rest .cbf .wl{transform:rotateY(86deg)}
+.cursor.rest .cbf .wr{transform:rotateY(-86deg)}
+
+/* ============ 2. 摘要（逐字進場） ============ */
+.story-title{font-size:clamp(34px,5vw,60px);margin-bottom:44px}
+.story-body{font-family:var(--serif);font-size:clamp(17px,1.9vw,22px);line-height:1.95;color:var(--ink-soft)}
+.story-body p+p{margin-top:22px}
+.story-body .accent{color:var(--ink);font-size:clamp(22px,2.5vw,30px);font-weight:700}
+/* 捲動時的文字動畫：進入畫面播放，離開後重置，往回捲會再播一次 */
+[data-tx]{transition:opacity .9s ease,transform 1s cubic-bezier(.2,.8,.2,1),clip-path 1s cubic-bezier(.7,0,.2,1)}
+[data-tx="fade"]{opacity:0}
+[data-tx="slide"]{opacity:0;transform:translateY(36px)}
+[data-tx="slide"]:nth-child(2){transition-delay:.12s}
+[data-tx="slide"]:nth-child(3){transition-delay:.24s}
+[data-tx="zoom"]{opacity:0;transform:scale(.82);transform-origin:0 50%}
+.center [data-tx="zoom"],.head [data-tx="zoom"]{transform-origin:50% 50%}
+/* 遮罩揭露：裁切裡面的 span（外層保持可見，才偵測得到進入畫面） */
+[data-tx="mask"] .mk{display:inline-block;padding-bottom:.08em;clip-path:inset(100% 0 0 0);transform:translateY(.5em);transition:transform 1s cubic-bezier(.2,.8,.2,1),clip-path 1s cubic-bezier(.7,0,.2,1)}
+[data-tx="mask"].in .mk{clip-path:inset(0 0 0 0);transform:none}
+[data-tx="type"]{min-height:1.2em}
+[data-tx].in{opacity:1;transform:none}
+[data-tx="type"].typing::after{content:"▍";margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.big-no{transform:scale(.6);opacity:0;transition:transform 1.4s cubic-bezier(.2,.8,.2,1),opacity 1s ease}
+.big-no.in{transform:none;opacity:1}
+[data-split] .ch{display:inline-block;opacity:0;transform:translateY(.55em) rotate(4deg);transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1),color 1.2s ease;
+  transition-delay:calc(var(--i) * 22ms)}
+[data-split].in .ch{opacity:1;transform:none}
+.story-title .ch{color:var(--accent)}
+.story-title.in .ch{color:var(--ink);transition-delay:calc(var(--i) * 22ms),calc(var(--i) * 22ms),calc(var(--i) * 22ms + .5s)}
+
+/* ============ 3. 介紹：旋轉地球 ============ */
+.garden{height:100vh;min-height:700px;padding:0;overflow:hidden}
+.g-sky{position:absolute;inset:0;background:linear-gradient(180deg,#E9EEF0 0%,#F3F0E6 55%,#EFE4D2 100%)}
+.g-far{position:absolute;inset:0}
+.g-far img{position:absolute;opacity:.22;filter:saturate(.6) blur(.5px);will-change:transform}
+.g-spot{position:absolute;left:0;top:0;border-radius:50%;pointer-events:none;opacity:0}
+/* 文字：淡入由左下往右上，淡出由右往左 */
+.g-text{position:absolute;z-index:40;top:clamp(92px,13vh,140px);left:var(--gut);width:min(460px,calc(100% - var(--gut)*2));pointer-events:none;
+  text-shadow:0 0 10px rgba(246,244,239,.95),0 0 3px rgba(246,244,239,.9);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.g-text.wait{opacity:0}
+.g-text.t-in{animation:tIn .9s cubic-bezier(.3,.6,.3,1) both;
+  -webkit-mask-image:linear-gradient(45deg,#000 42%,transparent 58%);mask-image:linear-gradient(45deg,#000 42%,transparent 58%);
+  -webkit-mask-size:260% 260%;mask-size:260% 260%}
+.g-text.t-out{animation:tOut .45s ease-in both;
+  -webkit-mask-image:linear-gradient(90deg,#000 42%,transparent 58%);mask-image:linear-gradient(90deg,#000 42%,transparent 58%);
+  -webkit-mask-size:260% 100%;mask-size:260% 100%}
+@keyframes tIn{from{-webkit-mask-position:100% 0;mask-position:100% 0;transform:translate(-14px,14px)}to{-webkit-mask-position:0 100%;mask-position:0 100%;transform:none}}
+@keyframes tOut{from{-webkit-mask-position:0 0;mask-position:0 0;transform:none}to{-webkit-mask-position:100% 0;mask-position:100% 0;transform:translateX(-18px)}}
+.g-text h2{margin-top:14px}
+.latin{margin-top:6px;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-soft)}
+.fam{font-size:12px;letter-spacing:.2em;color:var(--ink-mute)}
+.g-desc{margin-top:16px;font-family:var(--serif);font-size:15px;line-height:1.8;color:var(--ink-soft)}
+.g-meta{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin-top:14px;font-size:13px;line-height:1.6}
+.g-meta dt{color:var(--ink-mute);letter-spacing:.1em}
+.g-meta dd{color:var(--ink)}
+
+.g-stage{position:absolute;inset:0;touch-action:pan-y;outline:none}
+.g-stage:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.g-globe{position:absolute;left:0;top:0;border-radius:50%;will-change:transform;
+  box-shadow:0 0 0 2px rgba(255,255,255,.7),0 -10px 60px 16px rgba(170,205,220,.55),0 -2px 120px 40px rgba(220,235,240,.5)}
+.g-globe canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%}
+.g-globe .g-cloud{opacity:.85}
+.g-globe::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse 40% 8% at 50% 1%,rgba(255,255,255,.45),transparent),
+    radial-gradient(circle at 50% 50%,transparent 80%,rgba(40,80,100,.18) 94%,rgba(30,60,80,.35) 100%),
+    linear-gradient(180deg,transparent 3%,rgba(30,40,40,.18) 14%,rgba(30,35,30,.4) 40%)}
+.g-ring{position:absolute;inset:0;perspective:1600px;perspective-origin:50% 30%}
+.g-group,.g-deco{position:absolute;left:0;top:0;transform-origin:50% 100%;will-change:transform,filter,opacity;pointer-events:none}
+.g-group img,.g-deco img{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;user-select:none}
+.g-group img{filter:drop-shadow(0 20px 16px rgba(40,50,40,.35));animation:breathe 4s ease-in-out infinite;animation-delay:var(--delay);transform-origin:50% 100%}
+.g-deco img{filter:drop-shadow(0 10px 8px rgba(40,50,40,.3))}
+.g-shadow{position:absolute;left:12%;width:76%;bottom:-5%;height:12%;border-radius:50%;background:radial-gradient(closest-side,rgba(30,40,30,.45),transparent)}
+@keyframes breathe{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}50%{transform:translateY(-8px) rotate(1deg) scale(1.015)}}
+.g-near{position:absolute;z-index:30;inset:0;pointer-events:none;opacity:0;transition:opacity 1s ease}
+.g-near.on{opacity:1}
+.g-near img{position:absolute;bottom:-8%;filter:drop-shadow(0 -6px 18px rgba(30,40,30,.35)) blur(1.5px);will-change:transform}
+.g-ctrl{position:absolute;z-index:45;left:50%;bottom:20px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;color:var(--ink)}
+.g-ctrl>button{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:rgba(246,244,239,.7);backdrop-filter:blur(8px);font-size:26px;line-height:1;transition:background .2s,transform .2s}
+.g-ctrl>button:hover{background:#fff;transform:scale(1.08)}
+.g-ctrl>.g-play{width:44px;height:44px;border:0;background:none;backdrop-filter:none;display:flex;align-items:center;justify-content:center}
+.g-play span{width:12px;height:14px;border-left:4px solid var(--ink);border-right:4px solid var(--ink)}
+.g-play[aria-pressed="false"] span{width:0;height:0;border:0;border-left:13px solid var(--ink);border-top:8px solid transparent;border-bottom:8px solid transparent}
+.g-dots{display:flex;gap:4px}
+.g-dots button{width:24px;height:44px;display:flex;align-items:center;justify-content:center}
+.g-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:rgba(36,33,29,.25);transition:background .3s,transform .3s}
+.g-dots button[aria-current="true"]::before{background:var(--accent);transform:scale(1.3)}
+
+/* ============ 4–6. 互動 ============ */
+.play{overflow:hidden}
+
+/* ============ 7. 照片 ============ */
+.gallery{overflow:hidden;padding-bottom:80px}
+.gal-view{position:relative;overflow:hidden;cursor:grab;outline:none;padding:40px 0 160px;touch-action:pan-y}
+.gal-view.dragging{cursor:grabbing}
+.gal-view.dragging .card{pointer-events:none}
+.gal-view:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.gal-track{display:flex;align-items:flex-start;width:max-content;will-change:transform}
+.gal-col{display:flex;flex-direction:column;gap:clamp(28px,4vw,56px);width:clamp(230px,26vw,400px);margin-right:clamp(40px,8vw,150px);will-change:transform}
+.gal-col:nth-child(even){margin-top:18vh}
+.card{position:relative;aspect-ratio:5/7;overflow:hidden;background:var(--bg);--mx:50%;--my:50%}
+.card img{position:absolute;inset:8%;width:84%;height:84%;object-fit:contain;filter:saturate(.85) contrast(.95);transition:transform .6s cubic-bezier(.2,.7,.2,1),filter .5s ease}
+.card::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.35),transparent 60%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;opacity:.5}
+/* 聚光燈：游標處用同一個底色、提高飽和度與亮度，不換色調 */
+.card .lit{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .4s ease;background:var(--bgS);
+  -webkit-mask-image:radial-gradient(circle 170px at var(--mx) var(--my),#000 0,#000 35%,transparent 100%);
+          mask-image:radial-gradient(circle 170px at var(--mx) var(--my),#000 0,#000 35%,transparent 100%)}
+.card .lit img{filter:saturate(1.55) brightness(1.06) contrast(1.04)}
+.card:hover .lit{opacity:1}
+.card:hover img{transform:scale(1.04)}
+.card figcaption{position:absolute;z-index:3;left:18px;right:18px;bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;font-size:12px;letter-spacing:.12em;color:rgba(36,33,29,.75)}
+.card figcaption b{font-family:var(--serif);font-size:18px;letter-spacing:.06em;color:var(--ink)}
+.card .tag{position:absolute;z-index:3;top:14px;left:18px;font-family:var(--serif);font-weight:900;font-size:16px;letter-spacing:.1em;color:rgba(36,33,29,.55)}
+.gal-bar{width:min(300px,50vw);height:2px;margin:0 auto;background:var(--line);border-radius:2px;overflow:hidden}
+.gal-bar i{display:block;height:100%;width:100%;background:var(--ink);transform-origin:0 50%;transform:scaleX(0)}
+
+/* ============ 8. 團隊：三人置中橫排 ============ */
+.team{display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(24px,4vw,56px)}
+.team li{width:clamp(200px,24vw,280px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.photo{width:100%;aspect-ratio:3/4;border-radius:24px;background:var(--paper-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-mute);margin-bottom:12px}
+.team span{font-size:13px;color:var(--ink-mute)}
+
+/* ============ 9. 願景 ============ */
+.vision-body{font-family:var(--serif);font-size:clamp(18px,2vw,24px);line-height:1.9;color:var(--ink-soft)}
+.vision-body p+p{margin-top:24px}
+
+/* ============ 10. 頁尾：滿版，由網站底色轉成深色磨砂 ============ */
+.foot{position:relative;z-index:3;width:100%;min-height:100vh;display:flex;background:var(--paper);color:var(--fc,var(--ink));font-size:14px;font-weight:300;overflow:hidden;--dk:0}
+.foot-frost{position:absolute;inset:0;opacity:var(--dk);pointer-events:none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 60% 50% at 50% 30%,rgba(120,100,70,.28),transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 90%,rgba(70,90,80,.22),transparent 70%),
+    var(--dark)}
+.foot-in{position:relative;display:flex;flex-direction:column;width:100%;padding:110px var(--gut) 36px}
+.book-stage{position:relative;flex:1;min-height:340px;display:flex;align-items:center;justify-content:center}
+/* 漫畫線條的書：墨線＋平塗＋網點 */
+.cbook{width:min(760px,92vw);height:auto;overflow:visible}
+.cbook .ink{stroke:#1C1A17;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.cbook .ink:not([fill]){fill:none}
+.cbook .stemc{stroke:#B9CC92}                                 /* 書頁外是深色背景，枝條用淺色線 */
+.cbook .thin{stroke-width:1.4}
+.cbook .ink.sheet{fill:#F4EFE3}
+.cbook .grow{transform-box:fill-box;transform:scale(0)}
+.cbook .cfly{opacity:0}
+.cbook .cfly .wl{transform-box:fill-box;transform-origin:100% 50%}
+.cbook .cfly .wr{transform-box:fill-box;transform-origin:0 50%}
+.cbook .cfly.fl .wl{animation:cFlapL .2s ease-in-out infinite alternate}
+.cbook .cfly.fl .wr{animation:cFlapR .2s ease-in-out infinite alternate}
+@keyframes cFlapL{to{transform:scaleX(.25)}}
+@keyframes cFlapR{to{transform:scaleX(.25)}}
+.foot-title{text-align:center;margin:20px 0 56px}
+.foot-mark img{display:block;width:min(620px,80vw);height:auto;margin:0 auto;filter:invert(var(--dk))}   /* 深色底時轉成白色 */
+.foot-en{margin-top:10px;font-family:var(--serif);font-style:italic;letter-spacing:.2em;opacity:.7}
+.foot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;padding-top:44px;border-top:1px solid rgba(128,120,108,.3)}
+.fcol{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.foot h5{font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin-bottom:6px;opacity:.9}
+.foot-name{font-size:18px;font-weight:700}
+.fcol a{position:relative;padding:2px 0 6px;opacity:.72;transition:opacity .25s ease}
+.fcol a:hover{opacity:1}
+/* Connect：滑過時兩側出現方括號 */
+.bracket a::before,.bracket a::after{position:absolute;top:1px;color:var(--accent);font-weight:500;opacity:0;transition:opacity .3s ease,transform .35s cubic-bezier(.6,0,.2,1)}
+.bracket a::before{content:"[";left:-14px;transform:translateX(8px)}
+.bracket a::after{content:"]";right:-14px;transform:translateX(-8px)}
+.bracket a:hover::before,.bracket a:hover::after,.bracket a:focus-visible::before,.bracket a:focus-visible::after{opacity:1;transform:none}
+.copy{margin-top:48px;padding-top:24px;border-top:1px solid rgba(128,120,108,.2);display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:12px}
+.copy p{opacity:.65}
+/* 回到頂端：按鈕，滑過時反白 */
+.top-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border:1px solid currentColor;border-radius:999px;font-size:13px;letter-spacing:.15em;transition:background .3s ease,color .3s ease}
+.top-btn span{transition:transform .3s ease}
+.top-btn:hover,.top-btn:focus-visible{background:var(--fc,var(--ink));color:var(--dark)}
+.foot:not(.dark) .top-btn:hover{color:var(--paper)}
+.top-btn:hover span{transform:translateY(-3px)}
+
+/* 從選單跳頁：淡出淡入 */
+
+/* ============ RWD ============ */
+@media (max-width:860px){
+  .nav:not(.compact) .menu-wrap{display:none}
+  .nav .burger{opacity:1;pointer-events:auto;transform:none}
+  .nav .brand{left:50%;transform:translate(-50%,-50%)}
+  .g-text{top:84px}
+  .g-desc{display:none}
+  .foot-grid{grid-template-columns:1fr;gap:28px}
+  .copy{flex-direction:column;align-items:flex-start}
+  .hero-text{bottom:104px}
+  .g-ctrl{bottom:92px}
+}
+@media (hover:none){
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .rv,[data-split] .ch{opacity:1;transform:none}
+  .pop{transform:none}
+  #logoText{opacity:1}
+}
