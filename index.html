@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>蝶影浮生 · Butterfly Shadows, a Fleeting Life</title>
+<meta name="description" content="蝶影浮生：認識臺灣八種蝴蝶的樣貌、寄主植物與棲地。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 背景：懸浮粒子＋轉場漣漪（canvas）＋紙紋顆粒 -->
+<canvas class="dust" id="dust" aria-hidden="true"></canvas>
+<div class="noise" aria-hidden="true"></div>
+
+<!-- 鼠標：大白斑蝶的一生：幼蟲 → 金色的蛹 → 成蝶（JS 產生內容） -->
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<!-- 0. 開場：待機 → 載入進度 → START -->
+<div class="intro" id="intro">
+  <div class="intro-c">
+    <p class="intro-kicker">BUTTERFLY SHADOWS, A FLEETING LIFE</p>
+    <img class="intro-logo" src="assets/logo.png" alt="蝶影浮生">
+    <div class="intro-load">
+      <div class="bar"><i id="loadBar"></i><span class="perch" id="perch" aria-hidden="true"></span></div>
+      <span class="pct" id="loadPct">0%</span>
+    </div>
+    <button class="start" id="start" type="button" disabled><span>START</span><i aria-hidden="true">→</i></button>
+  </div>
+</div>
+
+<!-- 頂部選單：過了「介紹」後收合，LOGO 置中、選單按鈕在右 -->
+<header class="nav" id="nav">
+  <a class="brand" href="#hero"><img src="assets/logo.png" alt="蝶影浮生"></a>
+  <div class="menu-scrim" id="menuScrim" aria-hidden="true"></div>
+  <nav class="menu-wrap" id="menuWrap" aria-label="主選單">
+    <ul class="menu" id="menu">
+      <li><a href="#hero"><em>01</em>首頁</a></li>
+      <li><a href="#story"><em>02</em>摘要</a></li>
+      <li><a href="#garden"><em>03</em>介紹</a></li>
+      <li><a href="#play1"><em>04</em>互動1</a></li>
+      <li><a href="#play2"><em>05</em>互動2</a></li>
+      <li><a href="#play3"><em>06</em>互動3</a></li>
+    </ul>
+  </nav>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="menuWrap" aria-label="開啟選單">
+    <span class="burger-txt">MENU</span><span class="burger-ico"><i></i><i></i></span>
+  </button>
+</header>
+
+<main>
+
+<!-- 1. 首頁：LOGO 長出植物 → 蝴蝶飛出，會被滑鼠吸引 -->
+<section id="hero" class="hero" data-sec>
+  <h1 class="sr-only">蝶影浮生 Butterfly Shadows, a Fleeting Life</h1>
+  <svg class="logo" id="logo" viewBox="-150 -230 1900 1060" aria-hidden="true">
+    <g id="logoBack"></g>
+    <image id="logoText" href="assets/logo.png" x="0" y="130" width="1600" height="400"/>
+    <g id="logoFront"></g>
+  </svg>
+  <div class="flies" id="flies" aria-hidden="true"></div>
+  <div class="hero-text">
+    <p class="lead">Butterfly Shadows, a Fleeting Life</p>
+    <p class="hint">移動滑鼠，蝴蝶會跟著你</p>
+  </div>
+</section>
+
+
+<!-- 2. 摘要 -->
+<!-- 漣漪轉場：摘要固定在畫面上，捲動時從游標處以圓形擴散出來，蓋過首頁 -->
+<div class="rip-track" id="ripTrack">
+<section id="story" class="sec story" data-sec>
+  <div class="wrap narrow">
+    <p class="kicker" data-tx="type">01 — ABSTRACT</p>
+    <h2 class="story-title" data-split>一生，只為一次振翅</h2>
+    <div class="story-body">
+      <p data-tx="slide">蝴蝶的一生從一粒卵開始。牠先以幼蟲的模樣啃食寄主植物，再於蛹中靜靜地重組自己，最後破蛹而出，換得一雙短暫而絢麗的翅膀。</p>
+      <p data-tx="slide">「蝶影浮生」以臺灣常見的八種蝴蝶為主角：大白斑蝶、小紫斑蝶、淡紋青斑蝶、幻蛺蝶、枯葉蝶、橙端粉蝶、花鳳蝶與玉帶鳳蝶，整理牠們的樣貌、寄主植物與棲息的海拔。</p>
+      <p data-tx="slide">瀏覽這個網站時，游標也會跟著蛻變：從幼蟲、金色的蛹，到展翅的大白斑蝶。</p>
+      <p class="accent" data-tx="zoom">每一次振翅都只有一瞬，而這一瞬值得被看見。</p>
+    </div>
+  </div>
+</section>
+</div>
+
+
+<!-- 3. 介紹：旋轉地球 -->
+<section id="garden" class="sec garden" data-sec aria-roledescription="輪播" aria-label="蝴蝶介紹">
+  <div class="g-sky" aria-hidden="true">
+    <div class="g-far" id="gFar"></div>
+    <div class="g-spot" id="gSpot"></div>
+  </div>
+
+  <div class="g-text wait" id="gText" aria-live="polite">
+    <span class="pill" id="gNo">NO.01 / 08</span>
+    <h2 id="gName">大白斑蝶</h2>
+    <p class="latin" id="gLatin">Idea leuconoe clara</p>
+    <p class="fam" id="gFam">蛺蝶科 · 斑蝶亞科</p>
+    <p class="g-desc" id="gDesc"></p>
+    <dl class="g-meta" id="gMeta"></dl>
+  </div>
+
+  <div class="g-stage" id="gStage" tabindex="0" aria-label="旋轉地球，可用左右方向鍵或拖曳切換">
+    <div class="g-globe" id="gGlobe" aria-hidden="true"><img class="g-earth" id="gTex" src="assets/earth.png" alt="" draggable="false"></div>
+    <div class="g-ring" id="gRing"></div>
+  </div>
+  <div class="g-near" id="gNear" aria-hidden="true"></div>
+
+  <div class="g-ctrl">
+    <button type="button" id="gPrev" aria-label="上一隻">‹</button>
+    <div class="g-dots" id="gDots"></div>
+    <button type="button" id="gNext" aria-label="下一隻">›</button>
+    <button type="button" class="g-play" id="gPlay" aria-pressed="true" aria-label="暫停自動輪播"><span></span></button>
+  </div>
+</section>
+
+
+<!-- 4. 互動1 -->
+<section id="play1" class="sec play" data-sec>
+  <div class="wrap">
+    <div class="head"><h2 data-tx="mask">互動 1</h2><p data-tx="fade">INTERACTION 01</p></div>
+    <div class="slot"></div>
+  </div>
+</section>
+
+<!-- 5. 互動2 -->
+<section id="play2" class="sec play" data-sec>
+  <span class="big-no right" aria-hidden="true">03</span>
+  <div class="wrap">
+    <div class="head"><h2 data-tx="mask">互動 2</h2><p data-tx="fade">INTERACTION 02</p></div>
+    <div class="slot"></div>
+  </div>
+</section>
+<!-- 6. 互動3 -->
+<section id="play3" class="sec play" data-sec>
+  <span class="big-no" aria-hidden="true">04</span>
+  <div class="wrap">
+    <div class="head"><h2 data-tx="mask">互動 3</h2><p data-tx="fade">INTERACTION 03</p></div>
+    <div class="slot rv">【待補】互動內容</div>
+  </div>
+</section>
+
+
+<!-- 7. 照片：自動播放、可左右拖曳、頭尾相接循環；上下捲動時單雙欄錯位 -->
+<section id="gallery" class="sec gallery" data-sec>
+  <div class="wrap">
+    <div class="head"><h2 data-tx="mask">照片</h2><p data-tx="type">PHOTOS · 可左右拖曳</p></div>
+  </div>
+  <div class="gal-view" id="galView" tabindex="0" aria-label="照片牆，可用左右方向鍵或拖曳瀏覽">
+    <div class="gal-track" id="galTrack"></div>
+  </div>
+  <div class="gal-bar" aria-hidden="true"><i id="galBar"></i></div>
+</section>
+
+
+<!-- 8. 團隊 -->
+<section id="team" class="sec" data-sec>
+  <div class="wrap">
+    <div class="head"><h2 data-tx="mask">團隊</h2><p data-tx="fade">TEAM</p></div>
+    <ul class="team">
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+      <li class="rv"><div class="photo">照片</div><b>【待補】姓名</b><span>職責</span></li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- 9. 願景 -->
+<section id="vision" class="sec vision" data-sec>
+  <div class="wrap narrow center">
+    <div class="vision-body">
+      <p data-split>【待補】願景第一段。</p>
+      <p data-tx="type">【待補】願景第二段。</p>
+      <p class="accent" data-tx="zoom">【待補】結語。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- 10. 頁尾：滿版，進入時轉成深色，書裡長出植物、飛出蝴蝶 -->
+<footer class="foot" id="foot" data-sec>
+  <div class="foot-frost" aria-hidden="true"></div>
+  <div class="foot-in">
+    <!-- 漫畫線條的故事書：植物和蝴蝶從書頁中間長出來（JS 畫內容） -->
+    <div class="book-stage" aria-hidden="true">
+      <svg class="cbook" id="cbook" viewBox="-420 -400 840 560"></svg>
+    </div>
+    <div class="foot-title"><p class="foot-mark" data-tx="mask"><img src="assets/logo.png" alt="蝶影浮生"></p><p class="foot-en" data-tx="type">Butterfly Shadows, a Fleeting Life</p></div>
+    <div class="foot-grid">
+      <div class="fcol"><h5>Project</h5><p class="foot-name">蝶影浮生</p><p>【待補】系所／指導老師</p></div>
+      <div class="fcol dotted"><h5>Explore</h5><a href="#story">摘要</a><a href="#garden">介紹</a><a href="#play1">互動1</a><a href="#play2">互動2</a><a href="#play3">互動3</a></div>
+      <div class="fcol bracket"><h5>Connect</h5><a href="#">【待補】Email</a><a href="#">【待補】Instagram</a></div>
+    </div>
+    <div class="copy"><p>Copyright © 2026 蝶影浮生. All Rights Reserved.</p><p>本網站為學術製作成果，圖片與內容版權歸原作者所有。</p><a class="top-btn" href="#hero">回到首頁 <span aria-hidden="true">↑</span></a></div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
