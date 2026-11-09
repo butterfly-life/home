@@ -1,6 +1,6 @@
 /* ============ 字體（assets/fonts）：主標用獅尾四季春、內文用源雲明體（TW 字形，從 .ttc 取出） ============ */
 /* 英文：全站一律用 Cyrene Regular（只有一種粗細；宣告成 100–900 都用它，瀏覽器就不會自己加粗變形）。只涵蓋拉丁字母與標點，中文會落到後面的中文字體 */
-@font-face{font-family:'Cyrene';src:url(../assets/fonts/Cyrene+Regular+Advanced.otf) format('opentype');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2039-203A,U+20AC,U+2122}
+@font-face{font-family:'Cyrene';src:url(../assets/fonts/Cyrene-Regular-Advanced.otf) format('opentype');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2039-203A,U+20AC,U+2122}
 @font-face{font-family:'GenWanMin';src:url(../assets/fonts/GenWanMin2TW-EL.otf) format('opentype');font-weight:200;font-style:normal;font-display:swap}
 @font-face{font-family:'GenWanMin';src:url(../assets/fonts/GenWanMin2TW-L.otf) format('opentype');font-weight:300;font-style:normal;font-display:swap}
 @font-face{font-family:'GenWanMin';src:url(../assets/fonts/GenWanMin2TW-R.otf) format('opentype');font-weight:400;font-style:normal;font-display:swap}
