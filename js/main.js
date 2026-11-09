@@ -54,9 +54,15 @@
       if (el.dataset.zhLabel === undefined) el.dataset.zhLabel = el.getAttribute('aria-label') || '';
       el.setAttribute('aria-label', L(el.dataset.zhLabel, el.dataset.enLabel));
     });
+    $$('[data-en-alt]').forEach(el => {
+      if (el.dataset.zhAlt === undefined) el.dataset.zhAlt = el.getAttribute('alt') || '';
+      el.setAttribute('alt', L(el.dataset.zhAlt, el.dataset.enAlt));
+    });
     const btn = $('#lang');
     if (btn) btn.setAttribute('aria-pressed', lang === 'en');
   };
+  // 逐行揭露的段落裡的 <br> 先換成記號字元，fx.js 切行時再還原成強制換行
+  $$('[data-tx="lines"] br').forEach(b => b.replaceWith(''));
   applyLang();
   $('#lang').addEventListener('click', () => {
     lang = L('en', 'zh');
@@ -76,15 +82,9 @@
     { id: 'tirumala', name: '淡紋青斑蝶', latin: 'Tirumala limniace limniace', fam: '蛺蝶科 · 斑蝶亞科', alias: '淡色小紋青斑蝶、叉斑蝶',
       color: ['黑褐', '白'], mark: '斑點、線條', tail: false, wing: '35–51', alt: '0–1000', host: '華他卡藤、夜香花', food: '花蜜', author: '(Cramer), 1775', glow: '#DDF0F7',
       en: { name: 'Blue Tiger', fam: 'Nymphalidae · Danainae', alias: '', color: ['dark brown', 'white'], mark: 'spots and stripes', host: 'Dregea volubilis, Telosma cordata', food: 'nectar' } },
-    { id: 'hypolimnas', name: '幻蛺蝶', latin: 'Hypolimnas bolina kezia', fam: '蛺蝶科 · 蛺蝶亞科', alias: '琉球紫蛺蝶、幻紫斑蛺蝶、幻紫蝶',
-      color: ['黑褐', '白'], mark: '斑點、線條', tail: false, wing: '33–53', alt: '0–2000', host: '甘藷、甕菜、海牽牛、金午時花、賽葵、金腰箭、紫莖牛膝', food: '花蜜、腐果、樹液、動物排遺', author: 'Butler, 1878', glow: '#E2E0FA',
-      en: { name: 'Great Eggfly', fam: 'Nymphalidae · Nymphalinae', alias: 'Blue Moon Butterfly, Common Eggfly', color: ['dark brown', 'white'], mark: 'spots and stripes', host: 'sweet potato, water spinach, beach morning glory, Sida rhombifolia, Malvastrum, Synedrella, Achyranthes', food: 'nectar, rotting fruit, sap, animal dung' } },
     { id: 'kallima', name: '枯葉蝶', latin: 'Kallima inachus formosana', fam: '蛺蝶科 · 蛺蝶亞科', alias: '枯葉蛺蝶、木葉蝶',
       color: ['褐', '橙'], mark: '斑點、線條', tail: true, wing: '44–52', alt: '0–2000', host: '臺灣馬藍、腺萼馬藍、曲莖馬藍', food: '花蜜、腐果、樹液', author: 'Fruhstorfer, 1912', glow: '#FBE6D2',
       en: { name: 'Orange Oakleaf', fam: 'Nymphalidae · Nymphalinae', alias: 'Dead Leaf Butterfly, Indian Leafwing', color: ['brown', 'orange'], mark: 'spots and stripes', host: 'Strobilanthes formosanus, S. penstemonoides, S. flexicaulis', food: 'nectar, rotting fruit, sap' } },
-    { id: 'hebomoia', name: '橙端粉蝶', latin: 'Hebomoia glaucippe formosana', fam: '粉蝶科 · 粉蝶亞科', alias: '鶴頂粉蝶、端紅蝶、紅衽粉蝶、紅角大粉蝶',
-      color: ['白', '橙'], mark: '斑點', tail: false, wing: '47–51', alt: '0–2000', host: '小刺山柑、多花山柑、毛瓣蝴蝶木、魚木', food: '花蜜', author: 'Fruhstorfer, 1908', glow: '#FCE7D4',
-      en: { name: 'Great Orange Tip', fam: 'Pieridae · Pierinae', alias: '', color: ['white', 'orange'], mark: 'spots', host: 'Capparis henryi, C. floribunda, C. sikkimensis, Crateva adansonii', food: 'nectar' } },
     { id: 'demoleus', name: '花鳳蝶', latin: 'Papilio demoleus', fam: '鳳蝶科 · 鳳蝶亞科', alias: '無尾鳳蝶、達摩鳳蝶、黃斑鳳蝶',
       color: ['花', '花'], mark: '斑點', tail: false, wing: '42–46', alt: '0–1000', host: '柑橘、來母、柚、佛手柑、過山香、烏柑仔、金柑、石苓舅', food: '花蜜', author: 'Linnaeus, 1758', glow: '#F7F0D2',
       en: { name: 'Lime Swallowtail', fam: 'Papilionidae · Papilioninae', alias: 'Lime Butterfly, Chequered Swallowtail', color: ['mixed', 'mixed'], mark: 'spots', host: 'citrus, lime, pomelo, Buddha’s hand, Clausena, Atalantia, kumquat, Glycosmis', food: 'nectar' } },
@@ -92,7 +92,7 @@
       color: ['黑', '白'], mark: '斑點、線條', tail: true, wing: '39–54', alt: '0–2000', host: '柑橘、黎檬、柚、甜橙、飛龍掌血、食茱萸、烏柑仔、過山香', food: '花蜜', author: 'Linnaeus, 1758', glow: '#F1EFE8',
       en: { name: 'Common Mormon', fam: 'Papilionidae · Papilioninae', alias: '', color: ['black', 'white'], mark: 'spots and stripes', host: 'citrus, lemon, pomelo, sweet orange, Toddalia asiatica, Zanthoxylum ailanthoides, Atalantia, Clausena', food: 'nectar' } }
   ];
-  const KINDS = species.map(s => s.id);               // 網站上出現的蝴蝶只用這八種
+  const KINDS = species.map(s => s.id);               // 網站上出現的蝴蝶只用這六種
 
   /* ---------- 蝴蝶圖樣：翅膀畫在共用的 <defs>，每隻蝴蝶用 <use> 引用 ---------- */
   // 左側翅膀（身體在 x = 0），右側用鏡像
@@ -191,34 +191,24 @@
   const PRELOAD = ['assets/logo.png', ...KINDS.map(k => `assets/${k}-700.webp`), ...FLY_KINDS.map(k => `assets/${k}-fly.png`),...P_ASSETS.map(f => `assets/${f}.png`)];
   let loaded = 0, introPlayed = false;
   const total = PRELOAD.length + 1;
-  const showStart = () => { if (introPlayed && loaded >= total && startBtn.disabled) { startBtn.disabled = false; startBtn.classList.add('ready'); } };
+  const showStart = () => {};                           // 不再出現 START 按鈕：讀條跑完就自動進入（見下方「讀條」）
   const bump = () => { loaded++; showStart(); };
   PRELOAD.forEach(src => { const im = new Image(); im.onload = im.onerror = bump; im.src = src; });
   (document.fonts ? document.fonts.load(`900 100px "Noto Serif TC"`, '一生') : Promise.resolve()).then(bump, bump);
   setTimeout(() => { loaded = total; showStart(); }, 12000);   // 網路太慢時不要一直卡住
   setTimeout(() => { introPlayed = true; showStart(); }, reduce ? 0 : 4800);   // LOGO 入場播完（見 CSS .intro-logo）
 
-  // 開場背景：綠色小光點慢慢往上浮
-  {
-    const bg = $('#introBg'), R = Math.random;
-    for (let i = 0; i < 26; i++) {
-      const d = document.createElement('i'), s = 4 + R() * 10;
-      d.className = 'ib-dot';
-      d.style.cssText = `left:${(R() * 100).toFixed(1)}%;top:${(30 + R() * 75).toFixed(1)}%;width:${s.toFixed(1)}px;height:${s.toFixed(1)}px;` +
-        `--dx:${((R() - .5) * 14).toFixed(1)}vw;animation-duration:${(9 + R() * 10).toFixed(1)}s;animation-delay:${(-R() * 18).toFixed(1)}s`;
-      bg.appendChild(d);
-    }
-  }
   // 開場的霧：一層會飄動的霧，游標經過的地方散開一小圈，離開後慢慢聚回來
-  const fogStop = (() => {
-    const cv = $('#introFog'), ctx = cv.getContext('2d');
+  // makeFog(canvas, 範圍元素)：開場與「從利用，轉為保育」共用；只在範圍元素出現在畫面上時才畫
+  const makeFog = (cv, host) => {
+    const ctx = cv.getContext('2d');
     const hole = document.createElement('canvas'), hctx = hole.getContext('2d');   // 霧被吹散的範圍（越白 = 越清楚）
     const SC = .5;                                     // 半解析度畫，省效能，霧本來就是糊的
     const HR = 120;                                    // 散開的半徑（px）
-    let W = 0, H = 0, raf = 0, ptr = null, last = null;
+    let W = 0, H = 0, raf = 0, ptr = null, last = null, seen = true;
     const puffs = Array.from({ length: 16 }, () => ({ x: Math.random(), y: Math.random(), r: .18 + Math.random() * .22, vx: (Math.random() - .5) * .012, a: .25 + Math.random() * .25 }));
     const resize = () => {
-      W = Math.ceil(innerWidth * SC); H = Math.ceil(innerHeight * SC);
+      W = Math.ceil(host.clientWidth * SC); H = Math.ceil(host.clientHeight * SC);
       cv.width = hole.width = W; cv.height = hole.height = H;
     };
     const clear = (x, y) => {                          // 在 hole 上畫一個柔邊的圓
@@ -228,6 +218,9 @@
       hctx.beginPath(); hctx.arc(x, y, r, 0, 6.2832); hctx.fill();
     };
     const draw = now => {
+      raf = requestAnimationFrame(draw);
+      if (!seen) return;
+      if (Math.ceil(host.clientWidth * SC) !== W || Math.ceil(host.clientHeight * SC) !== H) resize();
       const t = now / 1000;
       // 霧慢慢聚回來
       hctx.globalCompositeOperation = 'destination-out';
@@ -235,7 +228,8 @@
       hctx.fillRect(0, 0, W, H);
       hctx.globalCompositeOperation = 'source-over';
       if (ptr) {                                       // 沿著移動路徑補點，快速移動也是一條連續的通道
-        const x = ptr.x * SC, y = ptr.y * SC;
+        const hr = host.getBoundingClientRect();       // 存的是視窗座標，每格換算，捲動時游標沒動也對得上
+        const x = (ptr.x - hr.left) * SC, y = (ptr.y - hr.top) * SC;
         if (last) {
           const n = Math.ceil(Math.hypot(x - last.x, y - last.y) / (HR * SC * .25));
           for (let k = 1; k <= n; k++) clear(last.x + (x - last.x) * k / n, last.y + (y - last.y) * k / n);
@@ -258,25 +252,240 @@
       // 挖掉被吹散的地方
       ctx.globalCompositeOperation = 'destination-out';
       ctx.drawImage(hole, 0, 0);
-      raf = requestAnimationFrame(draw);
     };
     const move = e => { ptr = { x: e.clientX, y: e.clientY }; };
     resize();
     addEventListener('resize', resize);
-    intro.addEventListener('pointermove', move);
-    intro.addEventListener('pointerdown', move);
-    intro.addEventListener('pointerleave', () => { ptr = last = null; });
+    host.addEventListener('pointermove', move);
+    host.addEventListener('pointerdown', move);
+    host.addEventListener('pointerleave', () => { ptr = last = null; });
+    if ('IntersectionObserver' in window) new IntersectionObserver(es => { seen = es[0].isIntersecting; }).observe(host);
     raf = requestAnimationFrame(draw);
     return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); };
-  })();
+  };
+  const fogStop = makeFog($('#introFog'), intro);
+  // 「從利用，轉為保育」：森林底圖上蓋一層同樣會被游標吹散的霧
+  { const sec = $('#k-conserve'), cv = sec && sec.querySelector('.kq-fog'); if (cv) makeFog(cv, sec); }
 
-  startBtn.addEventListener('click', () => {
-    intro.classList.add('out');
+  // START：像水面被點了一下的漣漪，一圈圈擴散到整個畫面，最後一圈實心的淺底蓋滿，開場才消失
+  // 依物理漣漪的規律：
+  //  1. 同一次擾動會發出一串波紋（波包）；外圈波長較長、跑得最快，最先出現也走得最遠，
+  //     內圈較慢、停在較小的半徑 → 每條速度不一，圈與圈的間距越往外越開
+  //  2. 能量攤在越來越大的圓周上，振幅約與 1/√r 成正比，再加上水的阻尼 → 線條越外越細、越淡
+  //  3. 擴散速度隨時間遞減（先快後慢）
+  //  4. 中心的水面回彈，稍晚再發出一串較弱、較小的第二波
+  const ringOut = () => {
+    const from = $('#ldLogo') || startBtn;               // 漣漪從讀條終點（左上角的 LOGO）擴散出去
+    const b = from.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    const D = 2 * Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + 40;   // 蓋滿整個視窗的直徑
+    const d0 = b.height, J = () => Math.random();
+    const ring = (cls, frames, delay, dur, easing) => {
+      const el = document.createElement('i');
+      el.className = 'intro-ring' + cls;
+      el.style.left = cx + 'px'; el.style.top = cy + 'px';
+      intro.appendChild(el);
+      return el.animate(frames, { duration: dur, delay, easing, fill: 'both' }).finished;
+    };
+    /* 物理漣漪（逐格模擬，畫在 canvas 上）：
+       1. 波紋一道一道「陸續」發出，間隔越來越長（擾動慢慢平息）→ 漸進性
+       2. 色散：先發出的外圈波長較長、跑得最快；後發的內圈越來越慢 → 每道速率不同，圈距越往外越開
+       3. 每道都先快後慢（水的阻力）：r(t) = v·τ·(1 − e^(−t/τ))
+       4. 振幅：能量攤在越來越大的圓周上 ∝ 1/√r，再乘上隨時間的衰減 → 越外越細、越淡
+       5. 每道波紋畫成「波峰（深）＋內側波谷（淺）」，看起來像水面的起伏 */
+    const cv = document.createElement('canvas'), DPR = Math.min(2, devicePixelRatio || 1);
+    cv.className = 'intro-ripples';
+    cv.width = Math.round(innerWidth * DPR); cv.height = Math.round(innerHeight * DPR);
+    intro.appendChild(cv);
+    const g = cv.getContext('2d');
+    const N = 10, TAU = .75, R0 = d0 / 2;   // 整體加快
+    const V0 = (D * .56) / (.78 * TAU);                    // 第一道約 1.7 秒擴散到畫面外
+    const waves = [];
+    let emit = 0;
+    for (let i = 0; i < N; i++) {
+      waves.push({ t0: emit, v: V0 * (1 - i * .075) * (.94 + J() * .12), a0: 1 - i * .07, lam: 22 - i * 1.3 });
+      emit += 42 * Math.pow(1.2, i) + J() * 20;          // 發出的間隔越來越長
+    }
+    const t00 = performance.now();
+    const drawRip = now => {
+      const t = (now - t00) / 1000;
+      g.setTransform(DPR, 0, 0, DPR, 0, 0);
+      g.clearRect(0, 0, innerWidth, innerHeight);
+      let alive = false;
+      for (const w of waves) {
+        const tt = t - w.t0 / 1000;
+        if (tt <= 0) { alive = true; continue; }
+        const r = R0 + w.v * TAU * (1 - Math.exp(-tt / TAU));
+        const a = w.a0 * Math.min(1, tt * 10) / Math.sqrt(1 + (r - R0) / 45) * Math.exp(-tt / 1.0);
+        if (a < .01) continue;
+        alive = true;
+        g.beginPath(); g.arc(cx, cy, r, 0, 6.2832);
+        g.strokeStyle = `rgba(62,95,59,${Math.min(1, a * 1.1).toFixed(3)})`; g.lineWidth = .5 + a * 3.2; g.stroke();
+        if (r - w.lam * .5 > R0) {                         // 內側的波谷：較淡、較寬
+          g.beginPath(); g.arc(cx, cy, r - w.lam * .5, 0, 6.2832);
+          g.strokeStyle = `rgba(62,95,59,${(a * .28).toFixed(3)})`; g.lineWidth = .5 + a * 6; g.stroke();
+        }
+      }
+      if (alive && t < 2.2) requestAnimationFrame(drawRip); else cv.remove();
+    };
+    requestAnimationFrame(drawRip);
+    // 最後實心的淺底從中心擴散蓋滿畫面
+    return ring(' fill', [{ width: d0 + 'px', height: d0 + 'px' }, { width: D + 'px', height: D + 'px' }], 600, 750, 'cubic-bezier(.45,.05,.3,1)');
+  };
+  let introStarted = false;
+  const startSite = () => {
+    if (introStarted) return;
+    introStarted = true;
+    startBtn.disabled = true;
+    // 選單直接就定位（不從上方滑下來），讀條的 LOGO 停在它的 LOGO 上，開場淡出時無縫接上
+    nav.style.transition = 'none';
     nav.classList.add('visible');
+    void nav.offsetWidth;
+    nav.style.transition = '';
     document.body.classList.add('started');
     document.body.classList.remove('locked');
     document.dispatchEvent(new Event('introdone'));
-    setTimeout(() => { fogStop(); intro.remove(); }, 1100);
+    const done = () => { intro.classList.add('out'); setTimeout(() => { fogStop(); intro.remove(); }, 700); };
+    if (reduce) done(); else ringOut().then(done, done);
+  };
+  startBtn.addEventListener('click', startSite);
+
+  /* ---------- 讀條：一隻蝴蝶沿著不規則、會繞圈的曲線飛過畫面 ----------
+     - 路線：從右上角出發，經過幾個隨機的點（中間還會繞一兩個小圈），最後停在左上角＝首頁選單常駐 LOGO 的位置
+       用平滑曲線（Catmull-Rom）串起來，再依進度沿曲線前進；蝴蝶頭朝前進方向，轉彎時身體微微傾斜
+     - 尾跡：最近 0.3～0.8 秒飛過的位置畫成一條越來越淡、越來越細的線
+     - 翅膀：飛行時一直拍動，進度前進得越快拍得越快
+     - 到 100%：蝴蝶停在左上角、淡出並縮小，原地浮現 LOGO，接著自動進入首頁
+     - 進度 = 「最短播放時間」和「素材實際載入比例」取較慢的那個；百分比與生命週期小圖示（卵→幼蟲→蛹→剛羽化→展翅）在畫面中央偏下 */
+  {
+    const ld = $('#ld'), fly = $('#ldFly'), logoEl = $('#ldLogo'), pctEl = $('#ldPct'), ico = $('#ldIco'), cv = $('#ldTrail');
+    const brandImg = $('.brand img');
+    const STAGES = [
+      '<svg viewBox="0 0 24 30" class="ld-egg"><ellipse cx="12" cy="16" rx="8.5" ry="11.5" fill="#F3EEDD" stroke="#B9A57E" stroke-width="1.4"/><path d="M7.5 10.5q4.5-3.6 9 0" stroke="#D8CBAA" stroke-width="1.2" fill="none"/></svg>',
+      '<img src="assets/kc-larva.png" alt="" class="ld-larva">',
+      '<img src="assets/cur-pupa.png" alt="" class="ld-pupa">',
+      '<img src="assets/cur-bf.png" alt="" class="ld-bf closed">',
+      '<img src="assets/cur-bf.png" alt="" class="ld-bf open">'
+    ];
+    if (ld && fly && cv) {
+      const ctx = cv.getContext('2d'), DPR = Math.min(2, devicePixelRatio || 1);
+      const R = (a, b) => a + Math.random() * (b - a);
+      // 終點：選單 LOGO 的位置（選單還沒出現時被往上推了一個選單高，要加回來）
+      const logoBox = () => {
+        const b = brandImg ? brandImg.getBoundingClientRect() : { left: 24, top: 21, width: 104, height: 26 };
+        return { x: b.left, y: b.top + (nav.classList.contains('visible') ? 0 : nav.offsetHeight), w: b.width || 104, h: b.height || 26 };
+      };
+      // 路線：以畫面比例記錄（0～1），換算時再乘上視窗大小，視窗縮放也跟著變
+      // 固定路線（依手繪草圖）：右上角起飛 → 往左再往下勾一個彎 → 沿右側往下 → 在右下繞一個圈 →
+      // 沿底部往左畫一道大弧 → 沿左側往上 → 停在左上角 LOGO 的位置
+      const way = [
+        [.891, .076], [.823, .062], [.759, .084], [.744, .179], [.795, .218], [.880, .280], [.909, .414],
+        [.880, .560], [.823, .633], [.752, .650], [.684, .588], [.691, .515], [.759, .465], [.823, .476],
+        [.848, .582], [.823, .694], [.716, .806], [.573, .862], [.458, .862], [.344, .784], [.258, .672],
+        [.215, .493], [.215, .280], [.186, .168],
+        [-1, -1]                                          // 最後一點：LOGO 中心（每格重新算）
+      ];
+      void R;
+      const SUB = 24;
+      const build = () => {
+        const lb = logoBox(), W = innerWidth, H = innerHeight;
+        const P = way.map(([x, y]) => x < 0 ? [lb.x + lb.w / 2, lb.y + lb.h / 2] : [x * W, y * H]);
+        const pts = [], cum = [0];
+        const g = k => P[Math.max(0, Math.min(P.length - 1, k))];
+        for (let k = 0; k < P.length - 1; k++) for (let j = 0; j < SUB; j++) {
+          const t = j / SUB, p0 = g(k - 1), p1 = g(k), p2 = g(k + 1), p3 = g(k + 2), t2 = t * t, t3 = t2 * t;
+          const f = (a, b, c, d) => .5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+          pts.push([f(p0[0], p1[0], p2[0], p3[0]), f(p0[1], p1[1], p2[1], p3[1])]);
+        }
+        pts.push(P[P.length - 1]);
+        for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+        return { pts, cum, len: cum[cum.length - 1], lb };
+      };
+      let path = build(), pw = innerWidth, ph = innerHeight;
+      const at = d => {
+        const { pts, cum } = path;
+        let lo = 0, hi = cum.length - 1;
+        while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cum[m] <= d) lo = m; else hi = m; }
+        const f = (d - cum[lo]) / ((cum[hi] - cum[lo]) || 1);
+        return [pts[lo][0] + (pts[hi][0] - pts[lo][0]) * f, pts[lo][1] + (pts[hi][1] - pts[lo][1]) * f];
+      };
+      const sizeCv = () => { cv.width = Math.round(innerWidth * DPR); cv.height = Math.round(innerHeight * DPR); };
+      sizeCv();
+      const tail = [];                                    // 尾跡：最近飛過的點與時間
+      const TAIL = .65;                                   // 尾跡保留的秒數（最舊的在 0.3 秒後開始淡、0.65 秒消失）
+      const t0 = performance.now(), MIN = reduce ? 600 : 3200;
+      let shown = 0, stage = -1, ang = 0, phase = 0, lastT = t0, last = null, finished = 0;
+      const tick = now => {
+        const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+        if (innerWidth !== pw || innerHeight !== ph) { pw = innerWidth; ph = innerHeight; path = build(); sizeCv(); }
+        const target = Math.min(1, (now - t0) / MIN, loaded / total);
+        const prev = shown;
+        shown += (target - shown) * .05;
+        if (target >= 1 && shown > .997) shown = 1;
+        // 速度有快有慢：進度換成路線距離時加上起伏（一下衝、一下放慢滑翔），仍保證一路往前、終點不變
+        const warp = p => p + .55 * Math.sin(p * Math.PI * 6) / (Math.PI * 6);
+        const dist = warp(shown) * path.len;
+        const [x, y] = at(dist);
+        const [nx, ny] = at(Math.min(path.len, dist + 8));
+        // 方向：頭朝路線前進的方向。圖裡的蝴蝶頭朝左上（約 -145°）；往右飛時左右翻轉（頭變成朝右上，約 -35°）
+        const dx = nx - x, dy = ny - y;
+        if (Math.hypot(dx, dy) > .3) {
+          if (Math.abs(dx) > .8) fly.classList.toggle('right', dx > 0);
+          const right = fly.classList.contains('right');
+          const head = Math.atan2(dy, dx), want = head - (right ? -35 : -145) * Math.PI / 180;
+          let d = want - ang; d = Math.atan2(Math.sin(d), Math.cos(d));   // 走最短的方向轉過去
+          ang += d * .18;
+        }
+        const speed = Math.abs(warp(shown) - warp(prev)) * path.len / Math.max(dt, .001);
+        phase += dt * (9 + Math.min(14, speed / 40));
+        const flap = shown >= 1 ? 1 : .55 + .45 * Math.abs(Math.cos(phase));
+        fly.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${ang.toFixed(3)}rad)`;
+        fly.style.setProperty('--flap', flap.toFixed(3));
+        // 尾跡
+        const ts = now / 1000;
+        if (!last || Math.hypot(x - last[0], y - last[1]) > 1.5) { tail.push([x, y, ts]); last = [x, y]; }
+        while (tail.length && ts - tail[0][2] > TAIL) tail.shift();
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        ctx.lineCap = 'round';
+        for (let i = 1; i < tail.length; i++) {
+          const age = ts - tail[i][2], k = 1 - age / TAIL;
+          if (k <= 0) continue;
+          ctx.strokeStyle = `rgba(62,95,59,${(k * k * .55).toFixed(3)})`;
+          ctx.lineWidth = .6 + k * 2.4;
+          ctx.beginPath(); ctx.moveTo(tail[i - 1][0], tail[i - 1][1]); ctx.lineTo(tail[i][0], tail[i][1]); ctx.stroke();
+        }
+        // 百分比＋小圖示
+        const pc = Math.floor(shown * 100);
+        pctEl.textContent = pc + '%';
+        ld.setAttribute('aria-valuenow', pc);
+        const s = pc >= 100 ? 4 : pc >= 75 ? 3 : pc >= 50 ? 2 : pc >= 25 ? 1 : 0;
+        if (s !== stage) {
+          stage = s; ico.innerHTML = STAGES[s];
+          ico.classList.remove('pop'); void ico.offsetWidth; ico.classList.add('pop');
+        }
+        // 到終點：蝴蝶淡出縮小、原地浮現 LOGO（位置與選單 LOGO 完全一樣），尾跡收完後自動進入首頁
+        if (shown >= 1) {
+          if (!finished) {
+            finished = now;
+            const lb = logoBox();
+            logoEl.style.cssText = `left:${lb.x}px;top:${lb.y}px;height:${lb.h}px`;
+            ld.classList.add('done');
+            setTimeout(startSite, 550);
+          }
+          if (now - finished > 900) return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
+
+  /* ---------- 選取文字：綠底黑字；原本就是黑字的地方改成綠底白字 ---------- */
+  document.addEventListener('selectionchange', () => {
+    const n = getSelection().anchorNode, el = n && (n.nodeType === 1 ? n : n.parentElement);
+    if (!el) return;
+    const [r, g, b] = (getComputedStyle(el).color.match(/[\d.]+/g) || [255, 255, 255]).map(Number);
+    document.documentElement.classList.toggle('sel-black', (.2126 * r + .7152 * g + .0722 * b) / 255 < .25);
   });
 
   /* ---------- 選單＋小圓點 ---------- */
@@ -460,8 +669,22 @@
 
   // 漣漪：進度 = 捲動距離 / TZ
   let ripP = -1, heroShown = true, storyOn = false;
+  // 延遲效果：捲動只決定「目標進度」，畫面上的漣漪用自己的迴圈慢慢追上（停止捲動後還會繼續擴散一下）
+  let ripGoal = 0, ripCur = -1, ripRaf = 0;
   const ripple = () => {
-    const p = reduce ? (scrollY > 2 ? 1 : 0) : clamp01(scrollY / TZ);
+    ripGoal = reduce ? (scrollY > 2 ? 1 : 0) : clamp01(scrollY / TZ);
+    if (true) { ripCur = ripGoal; ripApply(ripCur); return; }   // 延遲效果已取消：漣漪直接跟著捲動位置
+    if (!ripRaf) ripRaf = requestAnimationFrame(ripTick);
+  };
+  const ripTick = () => {
+    ripRaf = 0;
+    ripCur += (ripGoal - ripCur) * .09;
+    if (Math.abs(ripGoal - ripCur) < .002) ripCur = ripGoal;
+    ripApply(ripCur);
+    if (ripCur !== ripGoal) ripRaf = requestAnimationFrame(ripTick);
+    else queue();                                       // 追上後再更新一次選單狀態（透明底、目前頁面）
+  };
+  const ripApply = p => {
     if (p === ripP) return;
     if (ripP <= 0 && p > 0) {                          // 開始時記下游標位置當作漣漪中心
       const inView = mouse.x > 0 && mouse.x < innerWidth && mouse.y > 0 && mouse.y < innerHeight;
@@ -649,7 +872,9 @@
     fliesBox.appendChild(el);
     const [x, y] = from;
     const f = { el, sh: el.firstChild, bd: el.lastChild, x, y, vx: between(-30, 30), vy: between(-90, -40), rot: 0, ang: between(0, 6.28),
-      orbit: between(40, 120), spd: between(.7, 1.3), size: between(.8, 1.3), phase: between(0, 6.28), tx: x, ty: y, next: 0,
+      orbit: between(80, 260), spd: between(.45, 1.65), size: between(.8, 1.3), phase: between(0, 6.28), tx: x, ty: y, next: 0,
+      // 跟隨游標時每隻各有不同：繞的圈大小、方向、圓扁、偏離游標的位置，以及反應快慢
+      dir: hRand() < .5 ? 1 : -1, flat: between(.45, .9), ox: between(-140, 140), oy: between(-100, 100), react: between(.9, 3.8),
       state: 'fly', alt: 1, shAlt: -1, until: 0 };
     flies.push(f);
     el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
@@ -681,12 +906,12 @@
     const landed = flies.filter(f => f.state !== 'fly').length;
     flies.forEach(f => {
       let tx, ty, maxV, arrive = false;
-      if (chasing) {                                  // 被滑鼠吸引：繞著游標飛
+      if (chasing) {                                  // 被滑鼠吸引：各自繞著游標附近的一點飛，圈大小、方向、速度都不同
         takeOff(f, now);
-        f.ang += dt * (1.6 + f.spd);
-        tx = heroMouse.x + Math.cos(f.ang) * f.orbit;
-        ty = heroMouse.y + Math.sin(f.ang) * f.orbit * .7;
-        maxV = 320;
+        f.ang += dt * (.7 + f.spd * 1.3) * f.dir;
+        tx = heroMouse.x + f.ox + Math.cos(f.ang) * f.orbit;
+        ty = heroMouse.y + f.oy + Math.sin(f.ang) * f.orbit * f.flat;
+        maxV = 300;
       } else if (f.state === 'land') {                // 停著：不振翅，偶爾慢慢開合
         if (now > f.until) takeOff(f, now);
         f.alt = Math.max(0, f.alt - dt * 3);
@@ -723,9 +948,14 @@
         }
       } else f.alt = Math.min(1, f.alt + dt * 1.5);
       const sp = Math.min(maxV * f.spd, dist * (arrive ? 1.6 : 2.4));
-      const k = Math.min(1, dt * (chasing ? 3.2 : 1.8));
+      const k = Math.min(1, dt * (chasing ? f.react : 1.8));   // 跟隨游標時，有的很快跟上、有的慢吞吞
       f.vx += (dx / dist * sp - f.vx) * k;
       f.vy += (dy / dist * sp - f.vy) * k;
+      if (chasing) flies.forEach(g => {               // 彼此靠太近就互相推開，散開一點
+        if (g === f || g.state !== 'fly') return;
+        const ex = f.x - g.x, ey = f.y - g.y, ed = Math.hypot(ex, ey);
+        if (ed > 0 && ed < 110) { const push = (110 - ed) * 6 * dt; f.vx += ex / ed * push; f.vy += ey / ed * push; }
+      });
       f.phase += dt * (7 + f.spd * 5);
       const wob = f.alt;                              // 快降落時晃動變小
       f.x += (f.vx + Math.cos(f.phase * .7) * 22 * wob) * dt;
@@ -906,7 +1136,11 @@
   const fillText = s => {
     $('#gNo').textContent = `NO.${pad(species.indexOf(s) + 1)} / ${pad(N)}`;
     const e = s.en;
-    $('#gName').textContent = L(s.name, e.name);
+    // 名稱逐字包起來：每個字從一團煙裡浮現（同「知蝶百識」）
+    const nm = L(s.name, e.name), chars = [...nm];
+    $('#gName').innerHTML = `<span class="sr-only">${nm}</span>` +
+      chars.map((c, i) => `<span class="sc" aria-hidden="true" style="--i:${i}">${c === ' ' ? '&nbsp;' : c}</span>`).join('') +
+      chars.map((c, i) => `<i class="sw" aria-hidden="true" style="--i:${i};--x:${((i + .5) / chars.length * 100).toFixed(1)}%;--dx:${((Math.random() - .5) * 2.4).toFixed(2)}em"></i>`).join('');
     $('#gLatin').textContent = s.latin;
     $('#gFam').textContent = L(s.fam, e.fam);
     $('#gDesc').textContent = L(
@@ -1032,7 +1266,7 @@
     clearTimeout(timer);
     if (!anim) anim = requestAnimationFrame(step);
   };
-  const ENTRY = 2600;
+  const ENTRY = 1300;   // 介紹頁進場動畫的時間（加快：原本 2.6 秒）
   const playEntry = () => {
     const start = performance.now();
     const tick = now => {
@@ -1243,7 +1477,8 @@
 
     const loop = now => {
       const dx = mx - x, dy = my - y;
-      x += dx * .2; y += dy * .2;
+      const k = stageN === 0 ? .1 : .2;                // 首頁／開場的圓點：跟得更慢一點 → 明顯的延遲感
+      x += dx * k; y += dy * k;
       const v = Math.hypot(dx, dy);
       const isMoving = now - lastMove < 140 && v > .6;
       if (isMoving !== moving) {
@@ -1259,10 +1494,10 @@
       }
       hist.unshift([x, y]);
       if (hist.length > 40) hist.length = 40;
-      if (stageN === 0) {                             // 圓點：殘影是一圈圈的圓形線條，沿走過的路徑位移複製
+      if (false) {                                    // 圓點的位移複製殘影：依需求取消
         dotGhosts.forEach((g, i) => {
           const [hx, hy] = hist[Math.min(hist.length - 1, (i + 1) * 4)], ox = hx - x, oy = hy - y, d = Math.hypot(ox, oy);
-          g.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px) scale(${(1 + i * .14).toFixed(2)})`;
+          g.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px) scale(${(.86 - i * .13).toFixed(2)})`;   // 由大到小漸變
           g.style.opacity = d < 2 ? 0 : ((.55 - i * .08) * Math.min(1, d / 30)).toFixed(3);
         });
       }
@@ -1306,6 +1541,25 @@
     const thumb = bar.querySelector('.cbar-thumb'), slEls = [...bar.querySelectorAll('.cbar-sl')];
     const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
     const room = () => bar.clientHeight - TH;
+    // 軌道：一片片小葉子；毛毛蟲爬過（在牠上方）的葉子被吃掉，只剩黑黑的小便便
+    const track = bar.querySelector('.cbar-track'), LEAF = 13;
+    let leaves = [];
+    const makeLeaves = () => {
+      const n = Math.max(4, Math.floor(bar.clientHeight / LEAF));
+      track.innerHTML = Array.from({ length: n }, (_, i) => {
+        const side = i % 2 ? 1 : -1;
+        const rot = side * (32 + ((i * 37) % 22));
+        const hue = ['#6E9B4F', '#85AE5E', '#5E8C4A', '#9BBE6B'][(i * 7) % 4];
+        return `<i class="cbar-lf" style="top:${(i * LEAF + LEAF / 2).toFixed(1)}px;--r:${rot}deg;--sx:${side};--c:${hue};--pd:${(i * 53) % 360}deg"></i>`;
+      }).join('');
+      leaves = [...track.children].map(el => ({ el, y: parseFloat(el.style.top), eaten: false }));
+    };
+    makeLeaves();
+    addEventListener('resize', makeLeaves);
+    const eat = cut => leaves.forEach(l => {
+      const e = l.y < cut;
+      if (e !== l.eaten) { l.eaten = e; l.el.classList.toggle('eaten', e); }
+    });
     let shownY = 0, phase = 0, dirUp = false, crawl = 0, drag = null, cbRaf = 0, lastT = 0;
     const draw = now => {
       const dt = Math.min(.05, (now - lastT) / 1000 || .016); lastT = now;
@@ -1318,6 +1572,7 @@
       crawl += (Math.min(1, Math.abs(diff) / 30) - crawl) * Math.min(1, dt * 6);   // 移動中的蠕動幅度
       phase += (Math.abs(step) * .22 + dt * (.8 + crawl * 6));
       thumb.style.transform = `translate(0, ${shownY.toFixed(1)}px)`;
+      eat(shownY + TH * .5);
       // 扭身體：S 形的波從尾巴（上）傳到頭（下），爬得越快扭得越大；停著時也輕輕扭
       const amp = .3 + crawl * .7;
       slEls.forEach((s, i) => {
@@ -1328,7 +1583,7 @@
       cbRaf = requestAnimationFrame(draw);
     };
     if (!reduce) cbRaf = requestAnimationFrame(draw);
-    else { const place = () => { shownY = clamp01(scrollY / maxScroll()) * room(); thumb.style.transform = `translate(0, ${shownY}px)`; }; addEventListener('scroll', place, { passive: true }); place(); draw(0); cancelAnimationFrame(cbRaf); }
+    else { const place = () => { shownY = clamp01(scrollY / maxScroll()) * room(); thumb.style.transform = `translate(0, ${shownY}px)`; eat(shownY + TH * .5); }; addEventListener('scroll', place, { passive: true }); place(); draw(0); cancelAnimationFrame(cbRaf); }
     document.addEventListener('visibilitychange', () => {
       cancelAnimationFrame(cbRaf);
       if (!document.hidden && !reduce) { lastT = 0; cbRaf = requestAnimationFrame(draw); }

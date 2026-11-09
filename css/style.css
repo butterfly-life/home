@@ -38,8 +38,15 @@ html{scrollbar-width:none}
 html::-webkit-scrollbar{display:none}
 .cbar{position:fixed;z-index:95;top:10px;bottom:10px;right:4px;width:30px;transition:opacity .6s ease}
 body.locked .cbar{opacity:0;pointer-events:none}
-.cbar-track{position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;border-radius:2px;
-  background:repeating-linear-gradient(180deg,rgba(90,120,70,.28) 0 6px,transparent 6px 12px)}
+.cbar-track{position:absolute;left:0;top:0;bottom:0;width:100%;pointer-events:none}
+/* 一片片小葉子（::before）；被吃掉後葉子縮掉、留下黑黑的小便便（::after） */
+.cbar-lf{position:absolute;left:50%;width:0;height:0}
+.cbar-lf::before{content:"";position:absolute;left:calc(var(--sx) * 1px - 5px);top:-3px;width:10px;height:6px;border-radius:0 100% 0 100%;background:var(--c);opacity:.85;
+  transform:rotate(var(--r));transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s ease}
+.cbar-lf.eaten::before{transform:rotate(var(--r)) scale(0);opacity:0}
+.cbar-lf::after{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:6px;opacity:0;transform:scale(.4) rotate(var(--pd));transition:opacity .4s ease .25s,transform .4s ease .25s;
+  background:radial-gradient(circle at 25% 35%,#2A2118 1.4px,transparent 1.9px),radial-gradient(circle at 70% 60%,#2A2118 1.2px,transparent 1.7px),radial-gradient(circle at 40% 85%,#3A2E22 .9px,transparent 1.4px)}
+.cbar-lf.eaten::after{opacity:.85;transform:scale(1) rotate(var(--pd))}
 .cbar-thumb{position:absolute;left:0;top:0;width:30px;height:64px;cursor:grab;touch-action:none;will-change:transform}
 .cbar-thumb.drag{cursor:grabbing}
 body.has-cursor .cbar-thumb{cursor:none}
@@ -49,6 +56,8 @@ body.has-cursor .cbar-thumb{cursor:none}
 .cbar-sl{position:absolute;left:0;width:100%;background:url(../assets/cur-cat-bar.png) no-repeat;background-size:30px 64px;pointer-events:none;will-change:transform}
 .cbar-thumb:hover .cbar-sl{filter:brightness(1.06)}
 @media (pointer:coarse){.cbar{display:none}}
+::selection{background:#A6CF84;color:#000}   /* 選取文字：綠底黑字 */
+.sel-black ::selection{color:#fff}           /* 原本是黑字的地方：綠底白字（main.js 依選取處的字色加上 .sel-black） */
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
@@ -66,27 +75,15 @@ h2{font-size:clamp(36px,5vw,64px);font-weight:900;color:var(--ink)}
 
 /* ============ 開場前奏：背景 → 霧蓋上來 → LOGO 入場 → START ============ */
 .intro{position:fixed;inset:0;z-index:100;background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity 1s ease,visibility 1s}
-.intro.out{opacity:0;visibility:hidden;pointer-events:none}
-/* 1) 全螢幕背景：淡綠色的底，四周的植物輕輕擺動，綠色小光點慢慢浮起；先由稍微放大、淡入 */
-.intro-bg{position:absolute;inset:0;pointer-events:none;animation:ibIn 1.6s cubic-bezier(.2,.7,.2,1) both;
-  background:
-    radial-gradient(ellipse 55% 45% at 15% 20%,rgba(150,190,130,.42),transparent 70%),
-    radial-gradient(ellipse 50% 50% at 88% 85%,rgba(110,160,110,.4),transparent 70%),
-    radial-gradient(ellipse 40% 35% at 85% 12%,rgba(190,215,150,.38),transparent 70%),
-    radial-gradient(ellipse 45% 40% at 10% 90%,rgba(130,175,140,.36),transparent 70%),
-    #E9EFE2}
+.intro.out{opacity:0;visibility:hidden;pointer-events:none;transition-duration:.6s}
+/* 1) 全螢幕背景：水彩花草圖，先由稍微放大、淡入 */
+.intro-bg{position:absolute;inset:0;pointer-events:none;animation:ibIn 1.6s cubic-bezier(.2,.7,.2,1) both;background:#C9D9B8 url(../assets/intro-bg.jpg) center/cover no-repeat}
 @keyframes ibIn{from{opacity:0;transform:scale(1.08)}}
-.ib-p{position:absolute;height:auto;max-width:none;opacity:.85;filter:saturate(.9);animation:ibSway 9s ease-in-out infinite alternate}
-.ib-1{left:-4vw;top:-6vh;width:clamp(200px,28vw,420px);transform-origin:0 0;--r:-8deg}
-.ib-2{right:-2vw;top:-4vh;width:clamp(160px,20vw,300px);transform-origin:100% 0;--r:10deg;animation-delay:-3s}
-.ib-3{right:-5vw;bottom:-8vh;width:clamp(220px,30vw,460px);transform-origin:100% 100%;--r:-6deg;animation-delay:-5s}
-.ib-4{left:-3vw;bottom:-6vh;width:clamp(180px,24vw,360px);transform-origin:0 100%;--r:7deg;animation-delay:-2s}
-.ib-5{left:58%;top:62%;width:clamp(110px,12vw,180px);opacity:.5;--r:14deg;animation-delay:-7s}
-@keyframes ibSway{from{rotate:0deg}to{rotate:var(--r)}}
-.ib-dot{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(120,170,100,.9),rgba(120,170,100,0) 70%);animation:ibFloat linear infinite}
-@keyframes ibFloat{0%{transform:translate(0,0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translate(var(--dx),-28vh);opacity:0}}
-/* 2) 霧：背景出來後慢慢蓋上來；游標經過的地方挖空 */
-.intro-fog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;animation:fogIn 2s ease-in-out 1.5s both}
+/* START 之後的轉場：線條從按鈕一圈圈擴散到整個畫面，最後一圈是實心的淺底，蓋滿後開場消失 */
+.intro-ring{position:absolute;z-index:5;border:1.5px solid #3E5F3B;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.intro-ring.fill{border:0;background:var(--paper)}
+.intro-ripples{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}   /* 物理漣漪畫在淺底之上 *//* 2) 霧：背景出來後慢慢蓋上來；游標經過的地方挖空 */
+.intro-fog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}   /* 一開始就蓋著霧，背景在霧底下淡入 */
 @keyframes fogIn{from{opacity:0}}
 /* 3) LOGO 從霧裡浮現：由模糊、稍小變清楚，之後輕輕上下漂 */
 .intro-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px;padding:0 var(--gut);text-align:center}
@@ -111,13 +108,81 @@ h2{font-size:clamp(36px,5vw,64px);font-weight:900;color:var(--ink)}
 @keyframes startRing{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(1.18,1.5)}}
 .start:hover i{transform:translateX(6px)}
 .start:active{transform:scale(.97)}
+.start{display:none}   /* 改成讀條跑完自動進入，不再顯示 START 按鈕 */
+.intro-ring.fill{background:var(--paper)}   /* 開場最後蓋滿畫面的那一圈改成深色，接上深色的首頁 */
+
+/* ── 首頁：深色背景（同摘要）＋上下兩條跑馬燈 ── */
+#hero.hero{background:var(--paper);color:var(--ink)}   /* 首頁改回米色（同後面的淺色背景） */
+/* 相機對焦框：灰色細框，四角加粗，快速跳動（js/hero-depth.js） */
+.hd-scan{position:absolute;left:0;top:0;z-index:3;pointer-events:none;border:1px solid rgba(200,200,196,.45);opacity:0;
+  transition:transform .09s steps(2),width .09s steps(2),height .09s steps(2),opacity .06s linear;
+  background:linear-gradient(rgba(220,220,214,.8),rgba(220,220,214,.8)) 0 0/14px 2px no-repeat,linear-gradient(rgba(220,220,214,.8),rgba(220,220,214,.8)) 0 0/2px 14px no-repeat,
+             linear-gradient(rgba(220,220,214,.8),rgba(220,220,214,.8)) 100% 100%/14px 2px no-repeat,linear-gradient(rgba(220,220,214,.8),rgba(220,220,214,.8)) 100% 100%/2px 14px no-repeat}   /* 深灰色、沒有背景光（用 #hero 提高優先度，蓋過後面原本米色的 .hero 設定） */
+.hero .hint{color:var(--ink-mute)}
+.hero-text{bottom:clamp(28px,6vh,64px)}
+.hero{--hmq-h:132px}   /* 跑馬燈高度：原本的三倍 */
+.hmq{position:absolute;left:0;right:0;z-index:4;height:var(--hmq-h);display:flex;align-items:center;overflow:hidden;background:#120B06;pointer-events:none}   /* 深棕色，比首頁背景更深 */
+.hmq-top{top:68px}      /* 在頂部選單正下方，不蓋到內容；選單的層級比它高 */
+.hmq-bot{bottom:0}
+/* 兩端漸層：最外側是黑色，往中間變透明 */
+.hmq::before,.hmq::after{content:"";position:absolute;top:0;bottom:0;z-index:1;width:min(18vw,220px)}
+.hmq::before{left:0;background:linear-gradient(90deg,#120B06,rgba(18,11,6,0))}
+.hmq::after{right:0;background:linear-gradient(270deg,#120B06,rgba(18,11,6,0))}
+.hmq-in{display:flex;flex:none;white-space:nowrap;animation:hmqLeft 90s linear infinite}   /* 字變大、一圈變長，時間拉長讓速度維持差不多 */
+.hmq-bot .hmq-in{animation-name:hmqRight}
+.hmq-in span{flex:none;padding-right:.9em;font:500 calc(var(--hmq-h) * 1.02)/1 var(--sans);letter-spacing:.06em;color:#6EB27C}   /* 大寫字的高度約占跑馬燈的七成，上下留一點間距 */
+.hmq-in i{margin:0 .5em;font-style:normal;font-size:.5em;vertical-align:middle;color:#E9C58B}
+@keyframes hmqLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes hmqRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+
+/* ── 頂部選單：綠色底、選單項目用 LOGO 的黃色、沒有陰影 ── */
+.nav:not(.clear){background:var(--paper);box-shadow:none}   /* 米色，和後面的淺色背景一樣 */   /* 深一點的綠：LOGO 本身是綠色，底色太接近會看不清楚 */
+.nav::after{display:none}
+.nav:not(.clear) .menu a,.nav:not(.clear) .burger,.nav:not(.clear) .lang{color:var(--ink-soft);text-shadow:none}
+.nav:not(.clear) .menu a:hover,.nav:not(.clear) .menu a.on{color:var(--ink)}
+
+/* 讀條：小 LOGO 沿畫面四角走一圈，走過的地方留下細線；旁邊是百分比與生命週期小圖示 */
+.ld{position:absolute;inset:0;z-index:6;pointer-events:none}
+.ld-trail{position:absolute;inset:0;width:100%;height:100%}
+/* 飛行的蝴蝶：以中心對準路線上的點；--flap 由程式控制翅膀開合（上下壓扁＝側面看到的拍翅） */
+.ld-fly{position:absolute;left:0;top:0;width:0;height:0;will-change:transform;transition:opacity .7s ease}
+.ld-wing{position:absolute;left:-30px;top:-30px;width:60px;height:auto;max-width:none;transform-origin:62% 62%;transform:scaleY(var(--flap,1));
+  filter:drop-shadow(0 6px 6px rgba(60,45,20,.18))}
+.ld-fly.right .ld-wing{transform:scaleX(-1) scaleY(var(--flap,1))}   /* 往右飛時翻轉，頭朝前 */
+.ld.done .ld-fly{opacity:0;transform-origin:0 0}
+.ld.done .ld-wing{transition:transform .7s ease;transform:scale(.4)}
+/* 終點的 LOGO：和選單 LOGO 同位置同大小，蝴蝶到了才浮現 */
+.ld-logo{position:absolute;display:block;width:auto;max-width:none;opacity:0;transform:scale(.85);transform-origin:50% 50%;transition:opacity .8s ease .15s,transform .9s cubic-bezier(.2,.8,.2,1) .15s}
+.ld.done .ld-logo{opacity:1;transform:none}
+/* 百分比＋生命週期小圖示：畫面中央偏下 */
+.ld-meter{position:absolute;left:50%;top:78%;display:flex;align-items:center;gap:12px;transform:translateX(-50%);white-space:nowrap;transition:opacity .5s ease}
+.ld-pct{min-width:3.4em;font:500 15px/1 var(--sans);letter-spacing:.16em;color:var(--ink);font-variant-numeric:tabular-nums}
+.ld.done .ld-meter{opacity:0;transition-delay:.4s}
+.ld-ico{display:flex;align-items:center;justify-content:center;width:34px;height:34px}
+.ld-ico svg,.ld-ico img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.ld-egg{width:20px!important;height:25px!important}
+.ld-larva{width:34px!important;animation:ldCrawl .7s ease-in-out infinite alternate}
+.ld-pupa{height:32px!important;transform-origin:50% 0;animation:ldHang 1.6s ease-in-out infinite alternate}
+.ld-bf{height:30px!important}
+.ld-bf.closed{transform:scaleX(.35)}
+.ld-bf.open{animation:ldFlap .32s ease-in-out infinite alternate}
+.ld-ico.pop{animation:ldPop .55s cubic-bezier(.3,1.6,.5,1)}
+@keyframes ldPop{from{transform:scale(.2);opacity:0}}
+@keyframes ldCrawl{to{transform:scaleX(.88) translateX(-2px)}}
+@keyframes ldHang{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+@keyframes ldFlap{from{transform:scaleX(1)}to{transform:scaleX(.45)}}
 
 /* ============ 頂部選單（半透明） ============ */
-/* 固定懸浮、沒有框：首頁時淡淡的霧面，從「摘要」開始完全透明 */
+/* 固定懸浮、沒有框：首頁時是和首頁背景同色的實心底，從「摘要」開始完全透明 */
 .nav{position:fixed;top:0;left:0;right:0;z-index:80;height:68px;display:flex;align-items:center;justify-content:flex-end;padding:0 var(--gut);
-  background:rgba(246,244,239,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  opacity:0;transform:translateY(-100%);transition:opacity .6s ease,transform .6s ease,background .5s ease,backdrop-filter .5s ease,color .4s ease}
-.nav.clear{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+  background:var(--paper);   /* 和首頁背景同色（原本是半透明磨砂） */
+  opacity:0;transform:translateY(-100%);transition:opacity .6s ease,transform .6s ease,background .5s ease,backdrop-filter .5s ease,box-shadow .5s ease,color .4s ease}
+/* 選單下緣：柔和的陰影＋往下淡出的一段，邊緣糊糊的不生硬（摘要之後選單透明時一起消失） */
+.nav{box-shadow:0 8px 28px -6px rgba(74,46,24,.28)}   /* 深褐色陰影 */
+.nav::after{content:"";position:absolute;left:0;right:0;top:100%;height:22px;pointer-events:none;
+  background:linear-gradient(var(--paper),rgba(246,244,239,0));transition:opacity .5s ease}
+.nav.clear{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+.nav.clear::after,.nav.open::after{opacity:0}
 .nav .menu a,.nav .burger,.nav .lang{text-shadow:0 0 12px rgba(246,244,239,.9)}
 .nav.on-dark .brand,.nav.on-dark .menu a,.nav.on-dark .burger,.nav.on-dark .lang{text-shadow:0 0 12px rgba(28,26,23,.8)}
 .nav.visible{opacity:1;transform:none}
@@ -146,7 +211,7 @@ h2{font-size:clamp(36px,5vw,64px);font-weight:900;color:var(--ink)}
 /* 小圓點：滑到哪個字就移到它下面，移動中拉長＋動態模糊（選單、頁尾共用） */
 .dot{position:absolute;left:0;top:0;width:6px;height:6px;margin:-3px 0 0 -3px;pointer-events:none;opacity:0;
   transition:transform .8s var(--fifo),opacity .3s ease}
-.dot i{display:block;width:100%;height:100%;border-radius:50%;background:var(--accent);transition:transform .7s var(--fifo),filter .7s var(--fifo)}
+.dot i{display:block;width:100%;height:100%;border-radius:50%;background:#E9C58B;transition:transform .7s var(--fifo),filter .7s var(--fifo)}
 .dot.show{opacity:1}
 
 .burger{display:flex;align-items:center;gap:10px;height:44px;padding:0 4px;opacity:0;pointer-events:none;transform:translateX(12px);transition:opacity .4s ease,transform .4s ease}
@@ -260,7 +325,7 @@ main{position:relative;z-index:2}
 
 /* ============ 1. 首頁 ============ */
 .hero{position:fixed;inset:0;z-index:1;overflow:hidden;color:var(--ink);background:var(--paper);transform-origin:50% 50%}
-.logo{position:absolute;left:50%;top:46%;width:min(94vw,150vh);height:auto;transform:translate(-50%,-50%);overflow:visible}
+.logo{position:absolute;left:50%;top:calc(50% + 20px);width:min(100vw,142vh);height:auto;transform:translate(-50%,-50%);overflow:visible}
 #logoText{opacity:0;transition:opacity 1.6s ease}
 .hero.grow #logoText{opacity:1}
 /* 俯視、光從左上方來：貼在紙面上的植物只有很短的影子 */
@@ -270,6 +335,13 @@ main{position:relative;z-index:2}
 .sway{animation:sway var(--sw,6s) ease-in-out infinite alternate;animation-delay:var(--swd,0s)}
 @keyframes sway{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
 
+/* 首頁景深晃動（js/hero-depth.js）：LOGO 前後層各自錯開 */
+#logoBack,#logoFront{transform-box:view-box}
+/* 點擊首頁的光：點擊處的一團柔光＋斜斜掃過畫面的光帶（都很淡） */
+/* 點擊首頁：一道斜光帶從左掃到右（外圈暖金色的光暈＋中間一條亮白的光芯） */
+.hd-sweep{position:absolute;z-index:50;left:0;top:-25%;width:min(46vw,640px);height:150%;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(250,214,150,.06) 25%,rgba(255,226,170,.16) 42%,rgba(255,244,220,.26) 50%,rgba(255,226,170,.16) 58%,rgba(250,214,150,.06) 75%,transparent 100%);
+  filter:blur(42px)}   /* 很淡、很寬、邊緣高度模糊：像一陣柔光帶過，沒有明顯的光芯 */
 .flies{position:absolute;inset:0;pointer-events:none}
 .fly{position:absolute;left:0;top:0;width:0;height:0;will-change:transform;opacity:0;transition:opacity .6s ease}
 .fly.on{opacity:1}
@@ -311,7 +383,7 @@ main{position:relative;z-index:2}
 .cursor{position:fixed;left:0;top:0;z-index:120;pointer-events:none;display:none}
 body.has-cursor .cursor{display:block}
 .cursor .pt{position:fixed;left:0;top:0;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:var(--ink);opacity:.7}
-.cursor .ring{position:fixed;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:1px solid var(--accent);opacity:0;transform:scale(.5);transition:opacity .25s,transform .25s}
+.cursor .ring{position:fixed;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:1px solid #E9C58B;opacity:0;transform:scale(.5);transition:opacity .25s,transform .25s}
 .cursor.link .ring{opacity:.8;transform:scale(1)}
 .cursor.dotmode .pt{opacity:0}
 .critter{position:fixed;left:0;top:0;width:0;height:0}
@@ -320,8 +392,8 @@ body.has-cursor .cursor{display:block}
 /* 首頁：帶動態模糊的圓點，越快拉得越長 */
 .cdot{left:0;top:0;width:0;height:0}
 .cdot i{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;
-  background:radial-gradient(circle at 38% 35%,#5A5249,#24211D 60%,#0F0D0B);will-change:transform,filter}
-.cdot b{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;border:1.2px solid #24211D;opacity:0;will-change:transform}   /* 殘影：圓圈線條沿路徑位移 */
+  background:#24211D;will-change:transform,filter}   /* 實心圓點 */
+.cdot b{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:#24211D;opacity:0;will-change:transform}   /* 殘影：實心圓點沿路徑位移複製，越後面越小 */
 /* 幼蟲、蛹、成蝶：手繪圖（assets/cur-*.png） */
 .cat span,.pupa span,.cbf span{display:block;width:100%;height:100%}
 .cat img,.pupa img,.cbf img{width:100%;height:100%;object-fit:contain}
@@ -356,6 +428,31 @@ body.has-cursor .cursor{display:block}
 .story-body p+p{margin-top:22px}
 .story-mq{position:absolute;left:0;right:0;bottom:0;padding:12px 0;font-size:13px;font-weight:700;letter-spacing:.3em}
 .story-body .accent{color:var(--ink);font-size:clamp(22px,2.5vw,30px);font-weight:700}
+/* 摘要：莊重、有儀式感 —— 深色底、四周景深（邊緣變暗並模糊）、緩慢浮動的光點，游標經過帶出一圈暖光 */
+.story{background:radial-gradient(ellipse 80% 75% at 50% 46%,#2B2721 0%,#181612 58%,#0C0B09 100%);color:#EEE8DC}
+.story .kicker{color:rgba(233,197,139,.75)}
+.story-title{color:#F3EEE3;text-shadow:0 0 28px rgba(233,197,139,.18)}
+.story-body{color:rgba(238,232,220,.74)}
+.story-body .accent{color:#E9C58B}
+.story-grid{position:relative;z-index:2}
+.story-mq{z-index:4}
+.story-fx{position:absolute;inset:0;pointer-events:none}
+/* 游標的暖光：在文字底下，用 screen 疊加讓底色被照亮 */
+.story-glow{position:absolute;left:0;top:0;width:min(70vmin,620px);aspect-ratio:1;border-radius:50%;z-index:1;mix-blend-mode:screen;opacity:0;
+  background:radial-gradient(circle,rgba(255,220,160,.26) 0%,rgba(233,197,139,.12) 30%,rgba(233,197,139,.04) 52%,transparent 70%);
+  transform:translate3d(calc(var(--gx,50vw) - 50%),calc(var(--gy,50vh) - 50%),0);transition:opacity .8s ease;will-change:transform}
+.story.glow-on .story-glow{opacity:1}
+/* 浮動的光點（失焦的散景） */
+.story-bokeh{position:absolute;inset:0;z-index:1;overflow:hidden}
+.story-bokeh i{position:absolute;left:var(--x);top:var(--y);width:var(--s);aspect-ratio:1;border-radius:50%;filter:blur(var(--b));opacity:0;
+  background:radial-gradient(circle,rgba(255,226,170,.55),rgba(233,197,139,0) 70%);animation:bokeh var(--d) ease-in-out var(--dl) infinite}
+@keyframes bokeh{0%,100%{opacity:0;transform:translate(0,0)}20%,80%{opacity:var(--o)}50%{transform:translate(var(--mx),var(--my))}}
+/* 景深：四周暗角＋邊緣模糊，視線集中在中間 */
+.story-vig{position:absolute;inset:0;z-index:3;
+  background:radial-gradient(ellipse 72% 68% at 50% 48%,transparent 52%,rgba(6,5,4,.55) 86%,rgba(6,5,4,.85) 100%)}
+.story-dof{position:absolute;inset:0;z-index:3;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  -webkit-mask-image:radial-gradient(ellipse 78% 74% at 50% 48%,transparent 62%,#000 100%);mask-image:radial-gradient(ellipse 78% 74% at 50% 48%,transparent 62%,#000 100%)}
+@media (prefers-reduced-motion:reduce){.story-bokeh i{animation:none;opacity:calc(var(--o) * .6)}}
 /* 捲動時的文字動畫：進入畫面播放，離開後重置，往回捲會再播一次 */
 [data-tx]{transition:opacity .9s ease,transform 1s cubic-bezier(.2,.8,.2,1),clip-path 1s cubic-bezier(.7,0,.2,1)}
 [data-tx="fade"]{opacity:0}
@@ -377,7 +474,7 @@ body.has-cursor .cursor{display:block}
   transition-delay:calc(var(--i) * 22ms)}
 [data-split].in .ch{opacity:1;transform:none}
 .story-title .ch{color:var(--accent)}
-.story-title.in .ch{color:var(--ink);transition-delay:calc(var(--i) * 22ms),calc(var(--i) * 22ms),calc(var(--i) * 22ms + .5s)}
+.story-title.in .ch{color:#A6CF84;transition-delay:calc(var(--i) * 22ms),calc(var(--i) * 22ms),calc(var(--i) * 22ms + .5s)}
 
 /* ============ 3. 介紹：旋轉地球 ============ */
 .garden{position:relative;height:100vh;min-height:700px;padding:0;overflow:hidden}
@@ -399,6 +496,24 @@ body.has-cursor .cursor{display:block}
 @keyframes tIn{from{-webkit-mask-position:100% 0;mask-position:100% 0;transform:translate(-14px,14px)}to{-webkit-mask-position:0 100%;mask-position:0 100%;transform:none}}
 @keyframes tOut{from{-webkit-mask-position:0 0;mask-position:0 0;transform:none}to{-webkit-mask-position:100% 0;mask-position:100% 0;transform:translateX(-18px)}}
 .g-text h2{margin-top:14px}
+/* 介紹頁文字改成煙霧效果（同「知蝶百識」）：名稱逐字從煙裡浮現，其他文字由模糊變清楚；換下一隻時往上散成煙消失 */
+.g-text.t-in,.g-text.t-out{animation:none;-webkit-mask-image:none;mask-image:none;transform:none}
+#gName{position:relative}
+#gName .sc{display:inline-block}
+#gName .sw{position:absolute;left:var(--x);top:50%;width:1.6em;height:1.2em;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(150,160,150,.5),rgba(150,160,150,0));filter:blur(8px);opacity:0;transform:translate(-50%,-50%) scale(.4)}
+.g-text.t-in #gName .sc{animation:gScIn .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * .1s)}
+.g-text.t-in #gName .sw{animation:smokeOut 1.3s ease-out both;animation-delay:calc(var(--i) * .1s)}
+.g-text.t-in>:not(h2){animation:gBlurIn .9s ease both}
+.g-text.t-in>:nth-child(1){animation-delay:0s}
+.g-text.t-in>:nth-child(3){animation-delay:.25s}
+.g-text.t-in>:nth-child(4){animation-delay:.32s}
+.g-text.t-in>:nth-child(5){animation-delay:.42s}
+.g-text.t-in>:nth-child(n+6){animation-delay:.52s}
+.g-text.t-out>*{animation:gBlurOut .45s ease-in both}
+@keyframes gScIn{from{opacity:0;filter:blur(14px);transform:translateY(.3em) scale(1.25)}}
+@keyframes gBlurIn{from{opacity:0;filter:blur(10px);transform:translateY(8px)}}
+@keyframes gBlurOut{to{opacity:0;filter:blur(12px);transform:translateY(-10px) scale(1.04)}}
 .latin{margin-top:6px;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-soft)}
 .fam{font-size:12px;letter-spacing:.2em;color:var(--ink-mute)}
 .g-desc{margin-top:16px;font-family:var(--serif);font-size:15px;line-height:1.8;color:var(--ink-soft)}
@@ -501,18 +616,18 @@ body.has-cursor .cursor{display:block}
 .mq{overflow:hidden;white-space:nowrap;user-select:none;pointer-events:none}
 .mq-in{display:flex;width:max-content;will-change:transform}
 .mq-set{display:inline-flex;align-items:center;flex:none}
-/* 跑馬燈：字體和網站統一（獅尾四季春明體）、深灰底 */
-.mq{--mq-bg:#3A3A3A;--mq-fg:#EEEBE4;font-family:background:var(--mq-bg);color:var(--mq-fg)}
-.mq i{font-style:normal;margin:0 1.1em;color:var(--accent)}
+/* 跑馬燈：字體和網站統一、黑底 */
+.mq{--mq-bg:#111;--mq-fg:#EEEBE4;font-family:var(--serif);background:var(--mq-bg);color:var(--mq-fg)}
+.mq i{font-style:normal;margin:0 1.1em;color:#8FBF6C}   /* 跑馬燈的星號：綠 */
 .mq em{font-style:normal}
-.band{position:relative;z-index:2;background:#3A3A3A;padding:clamp(30px,6vh,64px) 0;overflow:hidden}
-.mq-big{font-family:font-weight:900;font-size:clamp(54px,9vw,140px);line-height:1.2;letter-spacing:.02em}
-.mq-big em{font-weight:900;color:#F2B66B}
+.band{position:relative;z-index:2;background:#111;padding:clamp(30px,6vh,64px) 0;overflow:hidden}
+.mq-big{font-family:var(--title);font-weight:900;font-size:clamp(54px,9vw,140px);line-height:1.2;letter-spacing:.02em}
+.mq-big em{font-weight:900;color:#A6CF84}   /* 原本橘色，改綠 */
 .mq-big i{font-size:.36em}
 .mq-sp{margin-top:20px;font-size:14px;font-weight:500;letter-spacing:.14em}
 .mq-sp .mq-set>span{display:inline-flex;align-items:center;gap:12px;margin-right:56px}
 .mq-sp img{width:48px;height:auto}
-.mq-sp em{font-family:font-style:italic;font-weight:300;letter-spacing:.04em;opacity:.6}
+.mq-sp em{font-family:var(--serif);font-style:italic;font-weight:300;letter-spacing:.04em;opacity:.6}
 
 /* 編排：左邊大標題、右邊引言（雜誌式） */
 .ed-head{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(28px,6vw,96px);align-items:end;margin-bottom:clamp(48px,8vh,90px)}
@@ -540,8 +655,8 @@ body.has-cursor .cursor{display:block}
 /* 大標題「蝴蝶」：固定比例，不變形 */
 .dock{position:relative;height:0;z-index:3}
 .learn{--dock-top:clamp(64px,11vh,130px)}   /* 「蝴蝶」大字和上一區（跑馬燈）之間的距離 */
-.dock-t{position:absolute;left:var(--gut);top:var(--dock-top);margin:0;font:900 min(19vw,32vh)/.92 var(--title);letter-spacing:.02em;color:#111;white-space:nowrap;pointer-events:none}
-.dock-space{position:relative;height:calc(min(19vw,32vh) + 26vh + var(--dock-top));display:flex;align-items:flex-end;justify-content:flex-end;padding:0 var(--gut) 5vh}
+.dock-t{position:absolute;left:var(--gut);top:var(--dock-top);margin:0;font:900 min(11vw,19vh)/.92 var(--title);letter-spacing:.02em;color:#111;white-space:nowrap;pointer-events:none}
+.dock-space{position:relative;height:calc(min(11vw,19vh) + 26vh + var(--dock-top));display:flex;align-items:flex-end;justify-content:flex-end;padding:0 var(--gut) 5vh}
 .dock-k{font:900 clamp(28px,3vw,44px)/1 var(--title);text-align:right}
 .dock-k span{display:block;margin-bottom:10px;font-size:12px;font-weight:700;letter-spacing:.32em;color:rgba(0,0,0,.5)}
 /* 概說：黑色標籤列（左）＋大字內文（右） */
@@ -558,7 +673,7 @@ body.has-cursor .cursor{display:block}
    │ 蝴蝶的      │ 輪盤（超出格子的部分裁掉並淡出） │
    └ 說明        │ 圖片＋編號    ┘ */
 .ks{position:relative;height:320vh}
-.ks-pin{position:sticky;top:0;height:100vh;overflow:hidden;--F:min(11vw,18vh);--Es:max(11px,calc(var(--F) * .13));--E:calc(var(--Es) * 1.3 + 6px);--ln:rgba(255,255,255,.1);
+.ks-pin{position:sticky;top:0;height:100vh;overflow:hidden;--F:min(11vw,18vh);--Es:max(11px,calc(var(--F) * .13));--G:max(10px,calc(var(--F) * .12));--E:calc(var(--Es) * 1.3 + var(--G));--ln:rgba(255,255,255,.1);
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;
   grid-template-areas:"k mid" "we wheel" "info side";column-gap:4vw;row-gap:clamp(14px,2.5vh,28px);
   padding:max(96px,12vh) var(--gut) 5vh;
@@ -567,7 +682,7 @@ body.has-cursor .cursor{display:block}
 .ks-mid{grid-area:mid;margin:0;font:700 13px/1.4 var(--hei);letter-spacing:.12em;color:rgba(255,255,255,.7)}
 .ks-we{grid-area:we;align-self:center;display:flex;flex-direction:column;margin:0;transform:translateY(calc(var(--E) / -2));font:900 var(--F)/1 var(--title);letter-spacing:.02em;white-space:nowrap}   /* 往上移半行英文，讓中文和輪盤目前那一格對齊 */
 /* 主標旁的英文翻譯：放在中文正上方，不佔左右寬度 */
-.ks-we small,.ks-wheel small{display:block;height:calc(var(--E) - 6px);margin-bottom:6px;font:500 var(--Es)/1.3 var(--sans);letter-spacing:.2em;opacity:.6}
+.ks-we small,.ks-wheel small{display:block;height:calc(var(--E) - var(--G));margin-bottom:var(--G);font:500 var(--Es)/1.3 var(--sans);letter-spacing:.2em;opacity:.6}
 .ks-we b,.ks-wheel b{font-weight:900}
 .ks-wheel{grid-area:wheel;position:relative;min-height:0;overflow:hidden;
   -webkit-mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent)}
@@ -578,6 +693,13 @@ body.has-cursor .cursor{display:block}
 .ks-info{grid-area:info;min-width:0;display:grid;align-items:end}
 .ks-pan{grid-area:1/1;opacity:0;visibility:hidden;transform:translateY(16px);transition:opacity .4s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility .4s}
 .ks-pan.on{opacity:1;visibility:visible;transform:none}
+/* 視覺延遲：換到下一項時，說明裡的標題、內文、清單一行一行晚一點才跟上 */
+.ks-pan>*,.kc-pan>*{opacity:0;transform:translateY(26px);transition:opacity .5s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
+.ks-pan.on>*,.kc-pan.on>*{opacity:1;transform:none}
+.ks-pan.on>:nth-child(2),.kc-pan.on>:nth-child(2){transition-delay:.12s}
+.ks-pan.on>:nth-child(3),.kc-pan.on>:nth-child(3){transition-delay:.24s}
+.ks-pan.on>:nth-child(4),.kc-pan.on>:nth-child(4){transition-delay:.36s}
+.kf-n.on{transition-delay:.18s}
 .ks-no{font:700 11px/1 var(--hei);letter-spacing:.3em;color:rgba(255,255,255,.5)}
 .ks-pan h3{margin:10px 0;font:900 clamp(24px,2.2vw,36px)/1.1 var(--title)}
 .ks-pan p{max-width:460px;font:500 clamp(14px,1.05vw,16px)/1.85 var(--hei)}
@@ -590,17 +712,83 @@ body.has-cursor .cursor{display:block}
 .ks-cap em,.kc-cap em{font:500 13px/1 var(--sans);font-style:normal;letter-spacing:.1em}
 /* 生活史：一排階段名稱橫向滑過，經過中間那一欄時變深色；左下換說明，中間欄的圖片橫向推換 */
 .kc{position:relative;height:460vh}
+/* ── 生活史（圖卡版）：卡片 sticky 疊起來 ── */
+#k-cycle.kc{height:auto;padding:0 var(--gut) 18vh}
+/* 引導線：修剪路徑（由上往下畫出來），末端一顆小點 */
+.kc-lead,.kt-line{position:relative;height:30vh;--d:0;pointer-events:none}
+/* 一整條：往上延伸 36vh 疊進轉場畫面的下半部（從「Four Forms」下方開始），不佔版面 */
+.kc-lead{top:-36vh;height:66vh;margin-bottom:-36vh;z-index:6}
+/* 轉場上的線：從文字下方開始（不疊到字），等文字全部出現後才畫出來 */
+.kt-line{position:absolute;left:50%;top:76%;bottom:0;height:auto;z-index:5}
+.kc-lead-ln{position:absolute;left:50%;top:0;width:2px;height:100%;margin-left:-1px;background:#111;transform-origin:50% 0;transform:scaleY(var(--d))}
+.kc-lead-dot{position:absolute;left:50%;top:calc(var(--d) * 100%);width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#111;opacity:0;transition:opacity .2s ease}
+.kc-lead .kc-lead-ln{transform:scaleY(0);transition:transform .9s cubic-bezier(.6,0,.2,1)}
+.kc-lead .kc-lead-dot{top:0;transition:top .9s cubic-bezier(.6,0,.2,1),opacity .2s ease}
+.kc-lead.on .kc-lead-ln{transform:scaleY(1)}
+.kc-lead.on .kc-lead-dot{top:100%;opacity:1}
+.kt-line .kc-lead-ln{transform:scaleY(0);transition:transform 1.1s cubic-bezier(.6,0,.2,1)}
+.kt-line .kc-lead-dot{top:0;transition:top 1.1s cubic-bezier(.6,0,.2,1),opacity .2s ease}
+.kt-line.on .kc-lead-ln{transform:scaleY(1)}
+.kt-line.on .kc-lead-dot{top:100%;opacity:1}
+.kc-stack{position:relative;max-width:1240px;margin:0 auto;perspective:1200px;perspective-origin:50% 30%}
+.kc-card{--h:min(68vh,560px);position:sticky;top:calc(84px + var(--i) * 18px);height:var(--h);margin-bottom:22vh;perspective:1000px;perspective-origin:50% -60%}   /* 消失點在卡片上方 → 進場時呈現下寬上窄、往上收攏的空間感 */
+/* 卡片外觀與立體變形都在 .kc-in（js 包進去的）：以下緣為軸往後仰 → 進場時是上窄下寬的梯形 */
+.kc-in{height:100%;transform-origin:50% 100%;will-change:transform;backface-visibility:hidden;
+  display:grid;grid-template-columns:clamp(80px,8vw,110px) minmax(0,1fr) clamp(220px,24vw,320px);border-radius:16px;overflow:hidden;color:#0A3D2B;background:#E3F0D8;
+  box-shadow:0 -10px 30px -18px rgba(10,61,43,.45)}
+.kc-card:last-child{margin-bottom:0}
+.kc-in>div{border-right:1px solid rgba(10,61,43,.18)}
+.kc-in>div:last-child{border-right:0}
+/* 左欄：Stage 編號（上）＋英文名稱（下） */
+.kc-c1{display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:28px 0;text-align:center}
+.kc-st{display:flex;flex-direction:column;gap:4px;margin:0}
+.kc-st small{font:500 13px/1 var(--sans);letter-spacing:.1em}
+.kc-st b{font:500 30px/1 var(--sans)}
+.kc-en{margin:0;font:500 12px/1.4 var(--sans);letter-spacing:.18em;writing-mode:vertical-rl}
+/* 中欄：標題列＋分隔線＋說明 */
+.kc-c2{display:grid;grid-template-rows:auto 1fr;min-width:0}
+.kc-h{display:flex;align-items:center;margin:0;padding:clamp(22px,4vh,40px) clamp(22px,3vw,44px);border-bottom:1px solid rgba(10,61,43,.18);font:900 clamp(24px,2.2vw,32px)/1.4 var(--title)}
+.kc-p{align-self:center;margin:0;padding:clamp(20px,3vh,36px) clamp(22px,3vw,44px);font:500 clamp(14px,1.05vw,16px)/1.95 var(--serif);color:rgba(10,61,43,.85)}
+/* 右欄：圖片＋名稱（同參考圖的人物照片欄） */
+.kc-c3{display:grid;grid-template-rows:1fr auto auto auto}
+.kc-ph{display:flex;align-items:center;justify-content:center;padding:12%;background:rgba(255,255,255,.35);border-bottom:1px solid rgba(10,61,43,.18);min-height:0;overflow:hidden}
+.kc-ph img{max-width:50%;max-height:50%;object-fit:contain;animation:kcFloat 3.6s ease-in-out infinite alternate}   /* 圖片縮成原本的一半 */
+.kc-n1,.kc-n2,.kc-n3{display:flex;align-items:center;justify-content:center;min-height:40px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kc-ph-num{flex-direction:column;gap:8px}
+.kc-card:nth-child(4) .kc-ph img{--r:-24deg}
+/* 幼蟲、蛹、蝴蝶：圖片格的 60%；卵維持 50% */
+.kc-card:nth-child(3) .kc-ph img,.kc-card:nth-child(4) .kc-ph img,.kc-card:nth-child(5) .kc-ph img{max-width:60%;max-height:60%}
+.kc-card:nth-child(n+3) .kc-ph{padding:6%}   /* 蛹的原圖是斜的，轉正成倒吊 */
+.kc-ph-num b{font:900 clamp(90px,9vw,150px)/.9 var(--title)}
+.kc-ph-num span{font:900 18px/1 var(--title)}
+.kc-n1,.kc-n2,.kc-n3{margin:0;padding:10px 16px;text-align:center;border-bottom:1px solid rgba(10,61,43,.18)}
+.kc-n1{font:500 12px/1.4 var(--sans);letter-spacing:.14em}
+.kc-n2{font:900 18px/1.4 var(--title)}
+.kc-n3{border-bottom:0;font:500 11px/1.4 var(--sans);letter-spacing:.2em;opacity:.7}
+@media (max-width:860px){
+  .kc-card{--h:auto;min-height:72vh}
+  .kc-in{grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto auto}
+  .kc-c3{grid-column:1 / -1;grid-template-rows:180px auto auto auto;border-top:1px solid rgba(10,61,43,.18)}
+}
 .kc-pin{position:sticky;top:0;height:100vh;overflow:hidden;--ln:rgba(0,0,0,.09);
-  background:linear-gradient(90deg,transparent calc(50% - .5px),var(--ln) 0 calc(50% + .5px),transparent 0 calc(75% - .5px),var(--ln) 0 calc(75% + .5px),transparent 0),
+  background:linear-gradient(90deg,transparent calc(50% - .5px),var(--ln) 0 calc(50% + .5px),transparent 0 calc(80% - .5px),var(--ln) 0 calc(80% + .5px),transparent 0),
              linear-gradient(transparent calc(50% - .5px),var(--ln) 0 calc(50% + .5px),transparent 0)}
+/* 格線區塊的扇形遮色：從每格右上角展開的四分之一圓（js/fx.js） */
+.kc-cells{position:absolute;inset:0;z-index:0;pointer-events:none}
+.kc-cell{position:absolute;overflow:hidden}
+.kc-cell::before{content:"";position:absolute;right:0;top:0;width:290%;height:290%;border-radius:50%;background:var(--c);opacity:.75;
+  transform:translate(50%,-50%) scale(0);transition:transform .9s cubic-bezier(.6,0,.2,1)}
+.kc-cell.on::before{transform:translate(50%,-50%) scale(1);transition-duration:.75s}
+.kc-pin>*:not(.kc-cells):not(.pxbg){z-index:1}
+.kc-egg img{transform-origin:50% 80%}
 .kc-top{position:absolute;left:var(--gut);top:110px;margin:0;font:700 12px/1 var(--hei);letter-spacing:.32em;color:rgba(0,0,0,.5)}
-.kc-row{position:absolute;left:0;right:0;top:0;bottom:50%;font:900 clamp(44px,5.6vw,100px)/1.2 var(--title);letter-spacing:.02em}
+.kc-row{position:absolute;left:0;right:0;top:0;bottom:50%;font:900 clamp(28px,3vw,54px)/1.2 var(--title);letter-spacing:.02em}
 .kc-track{position:absolute;left:50%;bottom:2.5vh;display:flex;white-space:nowrap;will-change:transform}
-.kc-track>span{flex:none;display:flex;flex-direction:column;width:30vw;padding-left:.1em}
-.kc-track small{display:block;margin-bottom:.35em;font:500 max(11px,.15em)/1.3 var(--sans);letter-spacing:.2em;opacity:.6}
+.kc-track>span{flex:none;display:flex;flex-direction:row;align-items:flex-end;gap:.35em;width:34vw;padding-left:.1em}
+.kc-track small{display:block;order:2;margin-bottom:.06em;font:500 max(11px,.15em)/1.3 var(--sans);letter-spacing:.2em;opacity:.6}
 .kc-track b{font-weight:900;line-height:1}
 .kc-dim{color:rgba(0,0,0,.15)}
-.kc-win{position:absolute;left:50%;width:25%;top:0;bottom:0;overflow:hidden}
+.kc-win{position:absolute;left:50%;width:30%;top:0;bottom:0;overflow:hidden}
 .kc-win .kc-track{left:0;color:#111}
 .kc-txt{position:absolute;left:var(--gut);top:calc(50% + 3vh);width:min(460px,calc(50% - var(--gut) - 3vw));display:grid}
 .kc-pan{grid-area:1/1;opacity:0;visibility:hidden;transform:translateY(16px);transition:opacity .4s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility .4s}
@@ -608,53 +796,86 @@ body.has-cursor .cursor{display:block}
 .kc-k{font:700 12px/1 var(--hei);letter-spacing:.3em;color:rgba(0,0,0,.5)}
 .kc-pan h4{margin:10px 0 14px;font:900 clamp(26px,2.4vw,40px)/1.1 var(--title)}
 .kc-pan p:last-child{font:500 clamp(14px,1.1vw,17px)/1.9 var(--hei)}
-.kc-pics{position:absolute;left:50%;width:25%;top:50%;bottom:0;overflow:hidden;background:var(--paper-2)}
+.kc-pics{position:absolute;left:50%;width:30%;top:50%;bottom:0;overflow:hidden;background:var(--paper-2)}
 .kc-strip{display:flex;height:100%;will-change:transform}
 .kc-pic{flex:none;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14%}
 .kc-pic svg,.kc-pic img{width:100%;height:100%;object-fit:contain}
-.kc-hang img{transform:rotate(-24deg)}   /* 蛹的原圖是斜的，轉正成倒吊的樣子（同游標） */
+.kc-hang img{--r:-24deg}   /* 蛹的原圖是斜的，轉正成倒吊的樣子（同游標） */
+/* 圖片輕微浮動、擺動 */
+.kc-pic img{transform-origin:50% 20%;animation:kcFloat 3.6s ease-in-out infinite alternate}
+.kc-pic:nth-child(2n) img{animation-duration:4.4s;animation-delay:-1.3s}
+@keyframes kcFloat{from{transform:rotate(var(--r,0deg)) translateY(-5px) rotate(-1.6deg)}to{transform:rotate(var(--r,0deg)) translateY(5px) rotate(1.6deg)}}
 .kc-num b{font:900 clamp(110px,13vw,220px)/.9 var(--title)}
 .kc-num span{font:900 clamp(18px,1.8vw,26px)/1 var(--title)}
 /* 型態分類：滑過科名，文字與圖片跟著換 */
-.kf{padding:clamp(110px,15vh,170px) 0}
-.kf-head{display:grid;grid-template-columns:auto 1fr;align-items:end;gap:16px 60px;margin-bottom:clamp(40px,6vh,70px)}
-.kf-head .ed-no{grid-column:1/-1;margin:0}
-.kf-title{font:900 clamp(56px,8vw,130px)/1 var(--title);letter-spacing:.02em}
-.kf-lead{justify-self:end;max-width:380px;font:600 16px/1.7 var(--hei)}
-.kf-grid{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,4fr) minmax(0,3.6fr);gap:clamp(24px,4vw,64px);align-items:center}
-.kf-img{position:relative;aspect-ratio:4/3.6;overflow:hidden;border-radius:22px;margin:0}
-.kf-pic{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--paper-2);opacity:0;transform:scale(1.1);
-  transition:opacity .5s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
-.kf-pic.on{opacity:1;transform:none}
-.kf-pic img{width:86%;height:86%;object-fit:contain}
-.kf-type b{font:900 clamp(96px,11vw,180px)/1 var(--title);letter-spacing:.02em}
-.kf-type span{margin-top:10px;font:800 13px/1 var(--hei);letter-spacing:.3em}
-.kf-list{list-style:none}
-.kf-list button{display:flex;align-items:center;gap:16px;padding:2px 0;font:900 clamp(34px,4.2vw,66px)/1.25 var(--title);color:rgba(0,0,0,.2);
-  transition:color .35s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
-.kf-list button::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;background:#000;transform:scale(0);transition:transform .35s ease}
-.kf-list button.on{color:#000;transform:translateX(6px)}
-.kf-list button.on::before{transform:scale(1)}
-.kf-info{display:grid}
-.kf-pan{grid-area:1/1;opacity:0;visibility:hidden;transform:translateY(18px);transition:opacity .35s ease,transform .6s cubic-bezier(.2,.8,.2,1),visibility .35s}
-.kf-pan.on{opacity:1;visibility:visible;transform:none}
-.kf-n{font:900 clamp(44px,4.4vw,64px)/1 var(--title);letter-spacing:.02em}
-.kf-n b{font-weight:900}
-.kf-w{margin:10px 0 18px;font:700 13px/1.6 var(--hei);color:rgba(0,0,0,.6)}
-.kf-pan li{padding:10px 0;border-top:1px solid rgba(0,0,0,.22);font:600 15px/1.65 var(--hei);opacity:0;transform:translateX(14px);transition:opacity .4s ease,transform .5s ease;transition-delay:calc(var(--k,0) * 60ms)}
-.kf-pan.on li{opacity:1;transform:none}
-
+/* 型態分類：捲動形式，版面同蝴蝶構造（淺底、沒有圖片）；右下是該科的種數 */
+.kf{position:relative;height:100vh}   /* 不再靠捲動換科（改用拉桿），一個畫面就好 */
+.kf .ks-pin{--ln:transparent;background:none}   /* 左右各半，中間不畫分隔細線 */
+/* 吃角子老虎機：科名轉輪（金框）＋右邊拉桿 */
+.kf-slot{grid-area:wheel;align-self:center;display:flex;align-items:center;gap:clamp(14px,1.6vw,26px);min-width:0;
+  --H:calc(var(--E) + var(--F) * 1.22)}
+.kf-box{position:relative;flex:0 1 auto}   /* 機台外框拿掉，只留轉輪文字＋拉桿 */
+.kf-reel{position:relative;height:var(--H);overflow:hidden;
+  -webkit-mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent)}
+.kf-strip{will-change:transform}
+.kf-strip>span{display:flex;flex-direction:column;justify-content:center;height:var(--H);font:900 var(--F)/1 var(--title);letter-spacing:.02em;white-space:nowrap;color:var(--k-deep)}
+.kf-strip small{display:block;height:calc(var(--E) - var(--G));margin-bottom:var(--G);font:500 var(--Es)/1.3 var(--sans);letter-spacing:.2em;color:var(--k-ochre)}
+/* 拉桿：底座貼在轉輪框右邊；桿子以底座為軸，--c 由 JS 控制 */
+.kf-lever{position:relative;flex:none;width:40px;height:calc(var(--H) * 1.9);padding:0;border:0;background:none;cursor:pointer;--c:1;--z:1;--L:calc(var(--H) * .78)}
+.kf-lever .lv-base{position:absolute;left:0;top:50%;width:26px;height:34px;margin-top:-17px;border-radius:6px 12px 12px 6px;background:linear-gradient(90deg,#B8925A,#E9C58B 60%,#C9A46C)}
+.kf-lever .lv-rod{position:absolute;left:13px;bottom:50%;width:8px;height:var(--L);margin-left:-4px;border-radius:4px;background:linear-gradient(90deg,#8E8A80,#EDE9DF 45%,#9A968C);transform-origin:50% 100%;transform:scaleY(var(--c))}
+.kf-lever .lv-ball{position:absolute;left:13px;top:50%;width:clamp(26px,2.6vw,38px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 34% 30%,#FF9B8E,#D8392C 55%,#8E1F17);box-shadow:0 6px 12px rgba(0,0,0,.45);
+  transform:translate(-50%,-50%) translateY(calc(var(--L) * var(--c) * -1)) scale(var(--z));transition:filter .2s ease}
+.kf-lever:hover .lv-ball{filter:brightness(1.15)}
+.kf-lever:focus-visible{outline:2px dashed #E9C58B;outline-offset:6px}
+.kf-lever .lv-ball{animation:leverHint 2.4s ease-in-out infinite}   /* 輕輕發光提示可以拉 */
+@keyframes leverHint{50%{box-shadow:0 6px 12px rgba(0,0,0,.45),0 0 0 9px rgba(233,197,139,.2)}}
+/* 轉輪下方的點點：共有幾個科、目前第幾個（可點） */
+.kf-col{display:flex;flex-direction:column;align-items:center;gap:clamp(14px,2.2vh,22px);min-width:0}
+.kf-dots{display:flex;align-items:center;gap:clamp(10px,1.2vw,16px);height:44px}
+/* 1～5 的數字圓：目前這一科放大並變成綠底白字 */
+.kf-dot{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:#E4DFD3;color:#6B6458;
+  font:600 13px/1 var(--sans);cursor:pointer;transition:background .35s ease,color .35s ease,transform .45s cubic-bezier(.3,1.5,.5,1),box-shadow .35s ease}
+.kf-dot:hover{background:#D5CFC0}
+.kf-dot.on{background:#2F5A2E;color:#fff;transform:scale(1.4);box-shadow:0 4px 12px -3px rgba(47,90,46,.55)}
+.kf-dot:focus-visible{outline:2px dashed #D9772F;outline-offset:3px}
+.kf .ks-k,.kf .ks-no{color:rgba(0,0,0,.5)}
+.kf .ks-mid{color:rgba(0,0,0,.65)}
+.kf .ks-wheel span:nth-child(n){padding-left:0}
+.kf .ks-wheel span:nth-child(2),.kf .ks-wheel span:nth-child(4){padding-left:.3em}
+.kf .ks-wheel span:nth-child(3){padding-left:.6em}
+.ks-pan h4{margin:10px 0 6px;font:900 clamp(24px,2.2vw,36px)/1.1 var(--title)}
+.kf-w{margin:0 0 10px;font:700 13px/1.6 var(--hei);color:rgba(0,0,0,.6)}
+.kf-ul{list-style:none}
+.kf-ul li{padding:6px 0;border-top:1px solid rgba(0,0,0,.16);font:500 clamp(13px,.95vw,15px)/1.6 var(--hei)}
+.kf-nums{display:grid}
+.kf-n{grid-area:1/1;display:flex;align-items:center;justify-content:flex-end;gap:clamp(14px,2vw,32px);margin:0;font:700 clamp(16px,1.4vw,22px)/1 var(--title);white-space:nowrap;opacity:0;transform:translateY(14px);transition:opacity .4s ease,transform .7s cubic-bezier(.2,.8,.2,1);
+  --D:min(24vh,190px)}   /* 最多種的那一科的圓直徑；其他科依 --r（√種數比）縮小 */
+.kf-n.on{opacity:1;transform:none}
+.kf-cnt{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:var(--D);height:var(--D);margin:0}
+.kf-cnt::before{content:"";position:absolute;left:50%;top:50%;z-index:-1;width:calc(var(--D) * var(--r,1));height:calc(var(--D) * var(--r,1));border-radius:50%;background:#A6CF84;
+  transform:translate(-50%,-50%) scale(.3);transition:transform .9s cubic-bezier(.2,.9,.25,1.15)}
+.kf-n.on .kf-cnt::before{transform:translate(-50%,-50%) scale(1);transition-delay:.15s}
+.kf-cnt{isolation:isolate}
+.kf-n b{font-size:2.8em;font-weight:900;letter-spacing:.02em}
+/* 蝴蝶圖示：每 10 種一隻，數量越多越密 */
+.kf-ico{display:grid;grid-template-columns:repeat(5,clamp(22px,2.4vw,34px));gap:6px;justify-content:end;align-content:center;max-height:var(--D)}
+.kf-ico img{display:block;width:100%;aspect-ratio:1;object-fit:contain;pointer-events:none;
+  opacity:0;transform:translateY(10px) rotate(var(--rot)) scale(.6);transition:opacity .4s ease,transform .6s cubic-bezier(.2,.9,.25,1.2)}
+.kf-n.on .kf-ico img{opacity:1;transform:rotate(var(--rot));transition-delay:calc(.25s + var(--i) * 55ms)}
 /* 標語：大字黑體＋內文（靜態編排） */
 .kq{padding:clamp(110px,16vh,180px) 0}
 .kq-grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(30px,6vw,100px);align-items:end}
 .kq-t{font:900 clamp(52px,7.6vw,128px)/1.08 var(--title);letter-spacing:.02em}
 .kq-sub{margin-bottom:16px;font:900 clamp(18px,1.6vw,24px)/1.4 var(--hei)}
+.kq-txt [data-tx="lines"] .ln>span{transition-duration:1.9s;transition-delay:calc(.35s + var(--l) * 200ms)}   /* 內文入場慢一點 */
+.kq-txt [data-tx="fade"]{transition-duration:1.6s!important}
 .kq-txt p:last-child{font:500 clamp(15px,1.25vw,18px)/1.95 var(--hei)}
 
 /* 天敵與常識：左邊大標、右邊可展開的清單 */
 .kfaq{padding:clamp(110px,16vh,180px) 0}
-.kfaq-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(30px,6vw,110px);align-items:start}
-.kfaq-l{position:sticky;top:150px}
+.kfaq-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(30px,6vw,110px);align-items:start}
+.kfaq-l{position:sticky;top:150px;order:2}   /* 左右交換：大標在右 */
 .kfaq-title{margin:6px 0 22px;font:900 clamp(60px,8vw,132px)/1 var(--title);letter-spacing:.02em}
 .kfaq-lead{max-width:360px;font:600 16px/1.75 var(--hei)}
 .kfaq-list{list-style:none;border-top:2px solid #111}
@@ -674,47 +895,228 @@ body.has-cursor .cursor{display:block}
 .kfaq-list li.open .q-a p{opacity:1;transform:none;transition-delay:.12s}
 
 /* 結語：三角形遮罩隨捲動展開 */
-.tri{position:relative;height:240vh;background:var(--paper-2)}   /* 外圍略深的米白，三角形裡是首頁同色的淺底 */
+.tri{position:relative;height:280vh;background:var(--paper)}   /* 毛毛蟲啃食轉場需要的捲動距離 */
+.tri .tri-in{clip-path:none!important}
+.tri-cover,.tri-bugs{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}   /* 淺色畫面（被啃掉）＋毛毛蟲 */   /* 外圍是首頁同色的淺底，三角形裡是深色（同頁尾） */
 .tri-pin{position:sticky;top:0;height:100vh;overflow:hidden}
-.tri-in{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:140px var(--gut) 6vh;background:var(--paper);clip-path:polygon(50% 100%,50% 100%,50% 100%)}
+.tri-in{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:140px var(--gut) 6vh;color:#EAE4D8;background:radial-gradient(ellipse 60% 55% at 50% 58%,rgba(255,228,180,.13),transparent 70%),var(--dark);clip-path:polygon(50% 100%,50% 100%,50% 100%)}
 .tri-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin-bottom:6vh}
 .tri-meta dt{font:800 12px/1 var(--hei);letter-spacing:.2em}
 .tri-meta dd{margin-top:8px;font:500 clamp(20px,1.8vw,28px)/1.2 var(--hei)}
-.tri-body{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:2vh 5vw;align-items:center}
+.tri-body{display:grid;grid-template-columns:minmax(0,1fr);gap:2vh;max-width:1100px}
 .tri-q{grid-column:1;font:900 clamp(32px,3.8vw,62px)/1.3 var(--title);letter-spacing:.02em}
-.tri-mark{display:inline-block;margin-right:.08em;padding:0 .08em;line-height:1;background:#111;color:#fff}
+.tri-mark{display:inline-block;margin-right:.04em;line-height:1}
 .tri-p{grid-column:1;max-width:780px;font:500 clamp(16px,1.35vw,20px)/1.9 var(--hei)}
-.tri-img{grid-column:2;grid-row:1/span 2;position:relative;aspect-ratio:1;margin:0;overflow:hidden;border-radius:22px;background:var(--paper-2)}
-.tri-img img{position:absolute;inset:8%;width:84%;height:84%;object-fit:contain}
-.tri-img .tri-fly{inset:auto 6% 52% auto;width:46%;height:auto;animation:idle 4s ease-in-out infinite}
 
 /* 英文版：較長的英文標題改橫排、縮小字級，避免撐破版面 */
 .lang-en .story-l{flex-direction:column;gap:14px}
 .lang-en .story-l .kicker,.lang-en .story-title{writing-mode:horizontal-tb}
 .story-title .w{display:inline-block;white-space:nowrap}
 .lang-en .story-title{max-width:7.5em;font-size:clamp(34px,4.2vw,58px);letter-spacing:.01em;line-height:1.1}
-.lang-en .kf-list button{font-size:clamp(24px,2.6vw,40px)}
-.lang-en .kf-title,.lang-en .kfaq-title,.lang-en .dock-k{letter-spacing:0}
+
+.lang-en .kfaq-title,.lang-en .dock-k{letter-spacing:0}
 /* 知識區的底色一律和首頁相同；黑白主題只用在「蝴蝶構造」：.k-dark 是黑底淺字 */
 .learn>.kb,.learn>.ks,.learn>.kc,.learn>.kf,.learn>.kq,.learn>.kfaq{background:var(--paper)}
 .learn>.k-dark{background:#111;color:#EEEBE4}
 
-/* 型態分類進場：主標先浮出來 → 大綱（引言、科名）→ 內文（圖片、說明） */
-.kf-head .ed-no,.kf-title{opacity:0;transform:translateY(70px);transition:opacity 1s ease,transform 1.2s cubic-bezier(.2,.8,.2,1)}
-.kf-title{transition-delay:.08s}
-.kf-lead,.kf-list li{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform 1s cubic-bezier(.2,.8,.2,1);transition-delay:calc(.7s + var(--k,0) * 90ms)}
-.kf-img,.kf-info{opacity:0;transform:translateY(34px);transition:opacity .9s ease,transform 1.1s cubic-bezier(.2,.8,.2,1);transition-delay:1.45s}
-.kf-info{transition-delay:1.6s}
-.kf.in .kf-head .ed-no,.kf.in .kf-title,.kf.in .kf-lead,.kf.in .kf-list li,.kf.in .kf-img,.kf.in .kf-info{opacity:1;transform:none}
+/* ── 知識區配色：中文大標用綠、英文用金褐（和標題不同色），並加上底色色塊 ── */
+.learn{--k-deep:#2F5A2E;--k-leaf:#5E8C5A;--k-lime:#A6CF84;--k-gold:#E9C58B;--k-ochre:#A8712A;--k-tint:#E4EDD8}
+.dock-t{color:var(--k-deep)}
+.dock-k{color:var(--k-deep)}
+.dock-k span{color:var(--k-ochre)}
+.kb-meta p{background:var(--k-deep);color:#F6F4EF}
+.kb-meta b{color:var(--k-lime)}
+.kb-txt .kb-lead{color:var(--k-deep)}
+/* 蝴蝶構造（黑底）：中文亮綠、英文金色 */
+.ks .ks-k,.ks .ks-no{color:var(--k-gold)}
+.ks .ks-wheel b{color:var(--k-lime)}
+.ks .ks-we small,.ks .ks-wheel small{color:var(--k-gold);opacity:.9}
+.ks .ks-pan h3{color:var(--k-lime)}
+.ks .ks-pan small{color:rgba(233,197,139,.75)}
+/* 生活史：亮起的中文深綠、英文金褐；圖片後面墊淺綠色塊 */
+.kc-win .kc-track{color:var(--k-deep)}
+.kc-win .kc-track small{color:var(--k-ochre);opacity:1}
+.kc-k{color:var(--k-ochre)}
+.kc-pan h4{color:var(--k-deep)}
+.kc-pics{background:var(--k-tint)}
+.kc-num b{color:var(--k-leaf)}
+/* 型態分類 */
+.kf .ks-k,.kf .ks-no{color:var(--k-ochre)}
+.kf .ks-wheel b{color:var(--k-deep)}
+.kf .ks-we small,.kf .ks-wheel small{color:var(--k-ochre);opacity:1}
+.kf .ks-pan h4{color:var(--k-deep)}
+.kf-w{color:var(--k-ochre)}
+.kf-ul li{border-top-color:rgba(47,90,46,.25)}
+.kf-n b{color:var(--k-deep)}
+/* 臺灣蝴蝶王國／從利用轉為保育：綠色大標＋淺綠底色色塊的副標 */
+.kq-t{color:var(--k-deep)}
+.kq-sub{display:inline-block;padding:.2em .55em;background:var(--k-lime);color:#1C2A1B}
+/* 天敵與常識 */
+.kfaq .ed-no{color:var(--k-ochre)}
+.kfaq-title{color:var(--k-deep)}
+.kfaq-lead{padding:14px 18px;background:var(--k-tint);border-left:4px solid var(--k-leaf)}
+.kfaq-list{border-top-color:var(--k-deep)}
+.q-tag{background:var(--k-deep);color:var(--k-lime)}
+.kfaq-list button:hover .q-t{color:var(--k-leaf)}
+/* ── 結語：點擊種植物，背景越種越亮 ── */
+.tri-in{cursor:pointer;--g:0;transition:color 1.2s ease}
+.tri-in>.tri-meta,.tri-in>.tri-body{position:relative;z-index:3;pointer-events:none}
+.tri-grass{position:absolute;inset:0;z-index:0;opacity:var(--g);transition:opacity 1.6s ease;pointer-events:none;
+  background:radial-gradient(ellipse 75% 70% at 50% 55%,#FBF8F1 0%,#EFE9DC 55%,#DCD3C1 100%)}   /* 越種越亮：暖白的光慢慢透出來 */
+.tri-in.bright{color:var(--ink)}   /* 背景亮起來後，文字改成深色才看得清楚 */
+.tri-plants{position:absolute;inset:0;z-index:1;pointer-events:none}
+/* 花：以點擊處為中心，從中間慢慢綻開；下方一圈模糊的淡淡陰影 */
+.tp{position:absolute;height:auto;max-width:none;transform-origin:50% 50%;transform:translate(-50%,-50%) rotate(var(--rot)) scale(0);
+  filter:drop-shadow(0 var(--sh,6px) calc(var(--sh,6px) * 1.4) rgba(30,50,20,.28));
+  animation:tpGrow 2.2s cubic-bezier(.2,.9,.3,1.12) forwards,tpSway var(--sw) ease-in-out 2.2s infinite alternate}
+@keyframes tpGrow{0%{transform:translate(-50%,-50%) rotate(calc(var(--rot) - 60deg)) scale(0)}45%{transform:translate(-50%,-50%) rotate(calc(var(--rot) - 15deg)) scale(.6)}100%{transform:translate(-50%,-50%) rotate(var(--rot)) scale(1)}}
+@keyframes tpSway{from{transform:translate(-50%,-50%) rotate(calc(var(--rot) - 4deg)) scale(1)}to{transform:translate(-50%,-50%) rotate(calc(var(--rot) + 4deg)) scale(1.03)}}
+.tri-hint{position:absolute;z-index:4;left:50%;bottom:max(28px,5vh);display:flex;align-items:center;gap:10px;margin:0;padding:10px 20px;border:1px solid rgba(234,228,216,.35);border-radius:999px;
+  background:rgba(20,28,20,.45);backdrop-filter:blur(6px);color:#EAE4D8;font:500 14px/1 var(--serif);letter-spacing:.12em;pointer-events:none;
+  transform:translateX(-50%);animation:hintPulse 2.4s ease-in-out infinite;transition:opacity .8s ease}
+.tri-hint i{font-style:normal;color:#A6CF84;font-size:18px}
+.tri-hint.off{opacity:0}
+@keyframes hintPulse{50%{box-shadow:0 0 0 8px rgba(166,207,132,.12)}}
+@media (prefers-reduced-motion:reduce){.tp{animation:none;transform:translate(-50%,-50%) rotate(var(--rot))}.tri-hint{animation:none}}
+
+/* ── 臺灣，蝴蝶王國：中間一欄是臺灣地圖＋落在南投埔里的定位標籤 ── */
+#k-kingdom .kq-grid{grid-template-columns:minmax(0,5.2fr) minmax(130px,2.2fr) minmax(0,4.6fr);align-items:center}
+.tw-map{position:relative;width:100%;max-width:240px;margin:0 auto}
+.tw-island{display:block;width:100%;height:auto;opacity:0;transform:translateY(24px) scale(.94);filter:drop-shadow(0 18px 22px rgba(47,90,46,.18));
+  transition:opacity 1s ease,transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.tw-map.in .tw-island{opacity:1;transform:none}
+.tw-pin{position:absolute;left:var(--px);top:var(--py);width:0;height:0}
+/* 標籤：尖端對準座標點，從上方落下、彈一下站穩 */
+.tw-drop{position:absolute;left:-17px;bottom:0;width:34px;height:auto;transform-origin:50% 100%;opacity:0;transform:translateY(-220px);filter:drop-shadow(0 6px 6px rgba(0,0,0,.25))}
+.tw-map.in .tw-drop{animation:twDrop .9s cubic-bezier(.5,0,.75,0) .9s forwards,twLand .6s ease-out 1.8s forwards}
+@keyframes twDrop{0%{opacity:0;transform:translateY(-220px)}15%{opacity:1}100%{opacity:1;transform:translateY(0)}}
+@keyframes twLand{0%{opacity:1;transform:scale(1.18,.78)}40%{transform:scale(.92,1.1) translateY(-10px)}70%{transform:scale(1.03,.97)}100%{opacity:1;transform:none}}
+/* 落地時的水波圈 */
+.tw-ring{position:absolute;left:-14px;top:-7px;width:28px;height:14px;border:2px solid #D9772F;border-radius:50%;opacity:0}
+.tw-map.in .tw-ring{animation:twRing 1.6s ease-out 1.8s infinite}
+.tw-map.in .tw-ring.r2{animation-delay:2.6s}
+@keyframes twRing{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(3)}}
+/* 地名標籤 */
+.tw-tag{position:absolute;left:22px;bottom:30px;display:flex;flex-direction:column;gap:3px;padding:7px 11px;border-radius:8px;background:#F6F4EF;box-shadow:0 8px 18px -8px rgba(0,0,0,.3);white-space:nowrap;
+  opacity:0;transform:translateX(-8px);transition:opacity .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.tw-tag b{font:900 15px/1.2 var(--title);color:#2F5A2E}
+.tw-tag small{font:500 9px/1 var(--sans);letter-spacing:.2em;color:#A8712A}
+.tw-map.in .tw-tag{opacity:1;transform:none;transition-delay:2.2s}
+@media (max-width:860px){
+  #k-kingdom .kq-grid{grid-template-columns:minmax(0,1fr)}
+  .tw-map{max-width:170px}
+}
+@media (prefers-reduced-motion:reduce){
+  .tw-map .tw-island,.tw-map .tw-tag{opacity:1;transform:none;transition:none}
+  .tw-map .tw-drop{opacity:1;transform:none;animation:none!important}
+}
+
+/* 每一題的對應圖示：放在標籤和題目之間，約題目字的 1.3 倍大 */
+.q-ico{flex:none;font-size:clamp(20px,1.9vw,30px);width:1.3em;height:1.3em;max-width:none;object-fit:contain;margin-right:-6px;opacity:.85;pointer-events:none;transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .3s ease}
+.kfaq-list button:hover .q-ico{opacity:1;transform:scale(1.12) rotate(-6deg)}
+.kfaq-list button[aria-expanded="true"] .q-ico{opacity:1;transform:scale(1.18)}
+/* 捲動視差的三層（js/fx.js 的 drawDepth）：背景在內容後面、前景在內容前面，都不擋滑鼠 */
+.px-host{position:relative;overflow:clip}
+.px-host>.wrap{position:relative;z-index:1}
+.px-host>.ks-pin{z-index:1}
+.px-layer{position:absolute;inset:0;pointer-events:none}
+.px-back{z-index:0}
+.px-front{z-index:2}
+/* 連續的植物背景：每個區塊各放一份，位置依整段換算，跨區塊接得上；在區塊底色之上、所有內容之下 */
+.pxbg-host{isolation:isolate}
+.pxbg{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.pxbg img{position:absolute;left:0;top:0;height:auto;max-width:none;will-change:transform}
+@media (prefers-reduced-motion:reduce){.pxbg{display:none}}
+.px-leaf{position:absolute;height:auto;max-width:none;will-change:translate}
+@media (max-width:860px){.px-near{display:none}}
+@media (prefers-reduced-motion:reduce){.px-layer{display:none}}
+
+/* 懸停（參考 Neu 的新聞列表）：一條深綠色的色帶從左邊刷進來鋪滿整列，標籤、圖示、題目、＋號一起反白；移開時往右刷掉 */
+.kfaq-list button{position:relative;isolation:isolate;border-radius:10px}
+.kfaq-list button::before{content:"";position:absolute;inset:6px 0;z-index:-1;border-radius:10px;background:var(--k-deep,#0F7652);
+  transform:scaleX(0);transform-origin:100% 50%;transition:transform .55s cubic-bezier(.7,0,.2,1)}
+.kfaq-list button:hover::before,.kfaq-list button:focus-visible::before{transform:scaleX(1);transform-origin:0 50%}
+.kfaq-list button .q-t,.kfaq-list button .q-tag{transition:color .35s ease .08s,background .35s ease .08s,transform .45s cubic-bezier(.2,.8,.2,1)}
+.kfaq-list button:hover .q-t,.kfaq-list button:focus-visible .q-t{color:#fff}
+.kfaq-list button:hover .q-tag,.kfaq-list button:focus-visible .q-tag{background:#fff;color:var(--k-deep,#0F7652)}
+.kfaq-list button:hover .q-ico,.kfaq-list button:focus-visible .q-ico{filter:brightness(0) invert(1)}
+.kfaq-list button:hover i::before,.kfaq-list button:hover i::after,.kfaq-list button:focus-visible i::before,.kfaq-list button:focus-visible i::after{background:#fff}
+.kfaq-list button i::before,.kfaq-list button i::after{transition:background .35s ease .08s}
+.kfaq-list button:hover{padding-left:16px;padding-right:16px}
+.kfaq-list button{transition:padding .5s cubic-bezier(.2,.8,.2,1)}
+/* 結尾引言（深色）：標記金色、小標亮綠 */
+.tri-mark{color:var(--k-gold)}
+
+/* ── 懸蛹互動（js/pupa.js）：畫面正中間一條彈力絲線吊著蛹，右邊資料、下方縮圖、羽化失敗時跳出說明 ── */
+.pupa-sec{position:relative;height:100vh;min-height:620px;overflow:hidden;background:var(--paper);user-select:none}
+.pupa-bg{position:absolute;left:50%;top:50%;margin:0;transform:translate(-50%,-50%);font:900 clamp(140px,26vw,420px)/1 var(--sans);letter-spacing:-.02em;color:rgba(36,33,29,.045);white-space:nowrap;pointer-events:none}
+.pupa-cv{position:absolute;inset:0;width:100%;height:100%;z-index:1;touch-action:pan-y;outline:none}
+.pupa-head{position:absolute;z-index:2;left:var(--gut);top:max(100px,13vh);width:min(300px,30vw);pointer-events:none}
+.pupa-k{margin:0 0 12px;font:500 11px/1 var(--sans);letter-spacing:.32em;color:var(--k-ochre,#A8712A)}
+.pupa-t{margin:0 0 16px;font:900 clamp(40px,4.6vw,72px)/1 var(--title);color:#2F5A2E}
+.pupa-hint{margin:0;font:500 14px/1.8 var(--serif);color:var(--ink-soft)}
+.pupa-info{position:absolute;z-index:2;right:var(--gut);top:50%;width:min(320px,28vw);transform:translateY(-40%);opacity:0;visibility:hidden;transition:opacity .5s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility .5s}
+.pupa-info.on{opacity:1;visibility:visible;transform:translateY(-50%)}
+.pi-k{margin:0 0 10px;font:500 11px/1 var(--sans);letter-spacing:.28em;color:#A8712A}
+.pi-n{margin:0;font:900 clamp(30px,3vw,46px)/1.1 var(--title);color:#2F5A2E}
+.pi-l{margin:6px 0 14px;font:italic 400 14px/1.4 var(--sans);color:var(--ink-mute)}
+.pi-p{margin:0 0 16px;padding:12px 14px;background:#E4EDD8;border-left:3px solid #5E8C5A;font:500 14px/1.75 var(--serif);color:var(--ink)}
+.pi-d{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font:500 13px/1.6 var(--serif)}
+.pi-d dt{color:var(--ink-mute);letter-spacing:.08em}
+.pi-d dd{margin:0;color:var(--ink)}
+.pupa-thumbs{position:absolute;z-index:2;left:50%;bottom:max(24px,4vh);transform:translateX(-50%);display:flex;gap:clamp(10px,1.4vw,18px)}
+.pz-t{position:relative;width:58px;height:58px;padding:6px;border:2px solid transparent;border-radius:50%;background:#E9E5DA;cursor:pointer;transition:transform .35s cubic-bezier(.3,1.5,.5,1),border-color .3s,background .3s}
+.pz-t img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.pz-t:hover{transform:translateY(-3px)}
+.pz-t.on{border-color:#2F5A2E;background:#fff;transform:scale(1.12)}
+.pz-t.done img{filter:saturate(.3);opacity:.6}
+.pz-t.done::after{content:"";position:absolute;right:-2px;top:-2px;width:14px;height:14px;border-radius:50%;background:#C2453A;box-shadow:0 0 0 2px var(--paper)}   /* 已羽化的紅點 */
+.pz-t:focus-visible{outline:2px dashed #2F5A2E;outline-offset:3px}
+/* 羽化失敗的說明 */
+.pupa-note{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:var(--gut);background:rgba(20,18,15,.72);opacity:0;transition:opacity .6s ease}
+.pupa-note.on{opacity:1}
+.pupa-note[hidden]{display:none}   /* 沒顯示時不能是一層透明遮罩擋住滑鼠 */
+.pupa-note-in{max-width:620px;padding:clamp(28px,4vw,48px);border-radius:20px;background:#F6F4EF;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);transform:translateY(16px);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.pupa-note.on .pupa-note-in{transform:none}
+.pupa-note-k{margin:0 0 12px;font:500 11px/1 var(--sans);letter-spacing:.32em;color:#C2453A}
+.pupa-note h3{margin:0 0 16px;font:900 clamp(24px,2.4vw,34px)/1.3 var(--title);color:#2F5A2E}
+.pupa-note p:not(.pupa-note-k){margin:0 0 24px;font:500 clamp(15px,1.2vw,18px)/1.95 var(--serif);color:var(--ink)}
+.pupa-note-x{padding:12px 26px;border:0;border-radius:999px;background:#2F5A2E;color:#fff;font:600 14px/1 var(--serif);letter-spacing:.1em;cursor:pointer}
+.pupa-note-x:hover{background:#3E6F3C}
+.pupa-end{background:rgba(23,34,26,.86)}
+.pupa-end .pupa-note-k{color:#5E8C5A}
+.pupa-sec.over .pupa-cv{cursor:grab}
+.pupa-sec.grab .pupa-cv{cursor:grabbing}
+@media (max-width:860px){
+  .pupa-head{width:auto;right:var(--gut);top:84px}
+  .pupa-hint{display:none}
+  .pupa-info{left:var(--gut);right:var(--gut);top:auto;bottom:110px;width:auto;transform:translateY(10px);padding:14px;border-radius:14px;background:rgba(246,244,239,.94)}
+  .pupa-info.on{transform:none}
+  .pi-p,.pi-d{display:none}
+  .pz-t{width:46px;height:46px;padding:4px}
+}
+
+/* 「從利用，轉為保育」：森林插畫當背景，上面蓋一層會被游標吹散的霧（同開場） */
+.learn>#k-conserve{position:relative;overflow:hidden;background:#3E7A3A url(../assets/conserve-bg.jpg) center/cover no-repeat}
+.kq-fog{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#k-conserve .kq-grid{position:relative;z-index:1}
+#k-conserve .kq-t,#k-conserve .kq-txt p:last-child{text-shadow:0 0 18px rgba(246,244,239,.9),0 0 4px rgba(246,244,239,.7)}   /* 霧被吹開時字仍看得清楚 */
+
+/* 點點匯聚成字（js/dots.js）：點畫在固定於視窗的 canvas；原本的逐行揭露關掉，改由點點聚好後整段淡入 */
+.dotx-cv{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:60;pointer-events:none}
+.dotx{opacity:0}
+.dotx[data-tx="lines"] .ln>span{transform:none!important;transition:none!important}
+.tri-meta dt{color:var(--k-lime)}
+
 /* 轉場：橫向條帶遮罩揭露＋黑白主題切換＋大字排版動畫（js/fx.js 把新主題那層切成橫向條帶） */
-.kt{position:relative;height:230vh}
+.kt{position:relative;height:230vh;user-select:none}   /* 純裝飾的轉場，不讓選取（避免複製到重複的字） */
 .kt-pin{position:sticky;top:0;height:100vh;overflow:hidden}
 .kt-lay{position:absolute;inset:0;--bg:var(--paper);--fg:#111;--ln:rgba(0,0,0,.08);color:var(--fg);
   background:linear-gradient(90deg,transparent calc(50% - .5px),var(--ln) 0 calc(50% + .5px),transparent 0),
              linear-gradient(transparent calc(50% - .5px),var(--ln) 0 calc(50% + .5px),transparent 0),var(--bg)}
 .kt[data-to="light"] .kt-a,.kt[data-to="dark"] .kt-b{--bg:#111;--fg:#EEEBE4;--ln:rgba(255,255,255,.1)}
-.kt-band{position:absolute;left:0;width:100%;overflow:hidden;will-change:clip-path}
-.kt-band>.kt-lay{bottom:auto}
+.kt-band{position:absolute;overflow:hidden;will-change:clip-path}
+
 .kt-t{position:absolute;left:50%;top:50%;margin:0;transform:translate(-50%,-50%);font:400 clamp(44px,9.5vw,170px)/1 var(--title);letter-spacing:-.02em;white-space:nowrap}
 .kt-l{display:block;overflow:hidden;padding:0 .06em .14em;margin-bottom:-.14em}
 .kt-l:nth-child(1){padding-left:1em;--dx:.5em}
@@ -722,8 +1124,11 @@ body.has-cursor .cursor{display:block}
 .kt-l:nth-child(3){--dx:.4em}
 .kt-l>span{display:inline-block;will-change:transform}
 /* 舊的字：橫向滑開，最後往上被裁掉；新的字：從下方被裁切處升上來，同時橫向歸位 */
-.kt-a .kt-l>span{transform:translate(calc(var(--dx) * var(--q) * -1),calc(-115% * var(--q) * var(--q)))}
-.kt-b .kt-l>span{transform:translate(calc(var(--dx) * (1 - var(--q))),calc(115% * (1 - var(--q))))}
+.kt-a .kt-l>span{transform:none}   /* 舊的字留在原位，被條帶蓋掉 */
+/* 新的字：疊在最上層（底色透明），一行接一行從下方淡入上來 */
+.kt-b.kt-text{background:none}
+.kt-b .kt-l{overflow:visible}
+.kt-b .kt-l>span{opacity:var(--q);transform:translateY(calc(55% * (1 - var(--q))))}
 .kt-a .kt-l:nth-child(1){--q:var(--a0,0)}
 .kt-a .kt-l:nth-child(2){--q:var(--a1,0)}
 .kt-a .kt-l:nth-child(3){--q:var(--a2,0)}
@@ -733,6 +1138,18 @@ body.has-cursor .cursor{display:block}
 .kt-cap{position:absolute;left:var(--gut);right:var(--gut);bottom:5vh;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;margin:0;font:700 14px/1.4 var(--hei);letter-spacing:.06em}
 .kt-cap b{font-size:12px;letter-spacing:.3em}
 .kt-cap em{margin-left:auto;font:500 13px/1 var(--sans);font-style:normal;letter-spacing:.1em}
+/* 地圖區塊：版面參考滿版圖片＋左上標籤、右上連結、左下大標；目前沒有圖，淺灰色字「地圖」佔位；沒有轉場動畫 */
+.zi{position:relative;z-index:2;display:block;min-height:100vh;overflow:hidden;color:#C9C6BF;background:var(--dark);text-decoration:none;cursor:pointer}
+.zi-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 60% 45%,rgba(255,255,255,.07),transparent 70%),linear-gradient(180deg,#2A2723,#1C1A17)}   /* 之後換成地圖縮圖 */
+.zi-top{position:absolute;left:var(--gut);right:var(--gut);top:clamp(84px,11vh,120px);display:flex;justify-content:space-between;gap:20px;font:500 14px/1.4 var(--serif);letter-spacing:.06em;color:#BDB9B1}
+.zi-t{position:absolute;left:var(--gut);bottom:clamp(40px,8vh,90px);margin:0;display:flex;flex-direction:column;color:#C9C6BF}
+.zi-t small{margin-bottom:clamp(10px,1.4vw,22px);font:400 clamp(12px,1vw,15px)/1 var(--sans);letter-spacing:.3em;color:#9E9A92}
+.zi-t b{font:400 clamp(90px,15vw,240px)/.9 var(--title);letter-spacing:.02em}
+.lang-en .zi-t small{display:none}
+/* 游標旁的「前往探索」小方塊 */
+.zi-cur{position:absolute;left:0;top:0;z-index:3;padding:10px 16px;font:500 13px/1 var(--serif);letter-spacing:.12em;color:var(--dark);background:#EAE4D8;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s ease}
+.zi.hover .zi-cur{opacity:1}
+@media (hover:none){.zi-cur{display:none}}
 /* 視差轉場：背景植物慢、大字橫移、蝴蝶快 */
 .pband{position:relative;z-index:2;height:80vh;min-height:460px;overflow:hidden;background:var(--c)}
 .pb-bg{position:absolute;left:50%;top:50%;width:min(72vw,940px);max-width:none;will-change:transform}
@@ -759,28 +1176,124 @@ body.has-cursor .cursor{display:block}
   .story-l .kicker,.story-title{writing-mode:horizontal-tb}
   .ed-head{grid-template-columns:1fr;align-items:start}
   .ed-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .kb-grid,.kf-grid,.tri-body{grid-template-columns:minmax(0,1fr)}
+  .kb-grid{grid-template-columns:minmax(0,1fr)}
   /* 構造：改成單欄由上而下排，圖片與小標收起來，輪盤只佔剩下的空間 */
   .ks-pin{--F:min(14vw,8vh);grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;
     grid-template-areas:"k" "we" "wheel" "info" "side";padding-top:84px;row-gap:clamp(10px,2vh,18px);background:none}
   .ks-mid,.ks-img{display:none}
   .ks-side{justify-content:flex-end}
-  .ks-pan p{max-width:none}  .kc-row{font-size:clamp(34px,9vw,60px)}
-  .kc-track span{width:46vw}
+  .kf-n{--D:min(15vh,120px)}
+  .kf{height:auto;min-height:100vh}
+  .kf .ks-pin{position:relative;height:auto;min-height:100vh;background:none}
+  .kf-slot{--F:min(12vw,7vh)}
+  .kf-ico{grid-template-columns:repeat(5,20px);gap:4px}
+  .ks-pan p{max-width:none}  .kc-row{font-size:clamp(26px,7vw,40px)}
+  .kc-track>span{width:46vw;flex-direction:column;align-items:flex-start;gap:0}
+  .kc-track small{order:0;margin:0 0 .35em}
   .kc-win{width:50%}
   .kc-pics{left:50%;width:50%;top:50%;bottom:auto;height:20vh}
   .kc-txt{top:calc(50% + 23vh);width:calc(100% - var(--gut) * 2)}
-  .kf-head{grid-template-columns:1fr}
-  .kf-lead{justify-self:start}
+
+
   .kq-grid,.kfaq-grid{grid-template-columns:minmax(0,1fr)}
   .kfaq-l{position:static}
   .q-a p{padding-left:6px}
   .tri-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tri-img{grid-column:1;grid-row:auto;width:50%}
-}
+  }
 @media (hover:none){
   .hint{display:none}
 }
+
+/* ── 英文版內文：Cyrene 字形窄，字距與字間距統一拉開，較好閱讀
+   （:where 不加權重：標題、標籤等原本就有自己字距設定的地方不受影響） ── */
+:where(.lang-en) :where(p,li,dd,dt,blockquote,figcaption){letter-spacing:.045em;word-spacing:.16em}
+
+/* ── 蝴蝶構造：「蝴蝶的」與輪盤（頭部／胸部／腹部）縮小成標題大小，部位的介紹文字直接接在標題下方 ── */
+/* 「蝴蝶的」拿掉；部位的介紹文字放在左半邊的下方、靠近中線（右側對齊），右上是輪盤、右下是圖片 */
+#k-struct .ks-pin{--F:clamp(32px,2.9vw,44px);grid-template-rows:auto minmax(0,1fr) auto;
+  grid-template-areas:"k mid" "info wheel" "info side";row-gap:clamp(16px,2.6vh,30px);padding-top:max(100px,13vh)}
+#k-struct .ks-we{display:none}
+#k-struct .ks-wheel{align-self:stretch;min-height:calc(var(--F) * 4 + var(--E) * 3)}
+#k-struct .ks-wheel-in{top:calc(var(--F) * .5 + var(--E) + 10px)}   /* 目前的部位在輪盤最上方 */
+/* 介紹文字：部位名稱放在左上，說明排成一欄窄長的文字放在名稱下方 */
+#k-struct .ks-info{align-self:stretch;justify-self:start;width:min(240px,100%);align-items:stretch}
+#k-struct .ks-pan{display:flex;flex-direction:column;justify-content:flex-start}
+#k-struct .ks-pan h3{font-size:var(--F);margin:6px 0 clamp(28px,6vh,64px)}
+#k-struct .ks-pan p:not(.ks-no){max-width:none;line-height:1.95}
+/* 左半部：說明文字放大，佔滿標題下方的整塊區域（寬約 1/4 畫面、往下到畫面下緣附近），幼蟲的補充放在最下面 */
+#k-struct .ks-info{width:min(360px,26vw);padding-bottom:4vh}
+#k-struct .ks-pan{height:100%}
+#k-struct .ks-pan p:not(.ks-no){font-size:clamp(14px,1.15vw,17px);line-height:2;letter-spacing:.05em}
+#k-struct .ks-pan small{margin-top:auto;font-size:clamp(13px,1.05vw,16px);line-height:1.9}
+/* 右半部：輪盤改成目前部位的大字直排，放在右上（輪盤本身隱藏，只用來帶捲動進度） */
+#k-struct .ks-wheel{visibility:hidden}
+.ks-vert{display:none}
+/* 直排名稱的輪盤：三個部位上下排成一列，視窗只露出一格；換部位時整列上下滾動，前後兩格往後轉、變淡（立體輪盤） */
+#k-struct .ks-vert{--V:min(8vw,14vh);--H:calc(var(--V) * 2.9);grid-area:wheel;justify-self:end;align-self:start;display:block;margin:0 2vw 0 0;
+  height:var(--H);overflow:hidden;perspective:900px;pointer-events:none;
+  -webkit-mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent)}   /* 格子比兩個字高，淡出只在最邊緣 → 字不會被切到 */
+.kv-in{transform:translateY(calc(var(--i,0) * var(--H) * -1));transition:transform .9s cubic-bezier(.65,0,.25,1.15)}
+/* 每一格：中文直排在右、英文直排在左，兩者上緣對齊（齊頭）；格子本身橫向排，子元素各自直排 */
+.kv-it{display:flex;flex-direction:row-reverse;align-items:flex-start;justify-content:flex-start;gap:12px;height:var(--H);margin:0;padding-top:calc(var(--V) * .35);box-sizing:border-box;white-space:nowrap;
+  transform:rotateX(calc(var(--d,0) * -38deg));opacity:.25;transition:transform .9s cubic-bezier(.65,0,.25,1.15),opacity .6s ease}
+.kv-it.on{transform:none;opacity:1}
+.kv-it b,.kv-it small{writing-mode:vertical-rl}
+.kv-it b{font:900 var(--V)/1 var(--title);letter-spacing:.06em;color:#6EB27C}
+.kv-it small{font:500 12px/1 var(--sans);letter-spacing:.3em;color:#E9C58B}
+@media (max-width:860px){#k-struct .ks-vert{--V:min(14vw,9vh);justify-self:start;margin:0}#k-struct .ks-info{width:auto}}
+/* 部位圖片：頭部在第 1 格、胸部第 2 格、腹部第 3 格，切換時滑過去 */
+#k-struct .ks-side{justify-content:flex-start}
+#k-struct .ks-img{--gap:12px;width:min(24vh,calc((100% - var(--gap) * 2) / 3));transform:translateX(calc(var(--ix,0) * (100% + var(--gap))));
+  transition:transform .9s cubic-bezier(.65,0,.25,1.12)}
+@media (max-width:860px){
+  #k-struct .ks-pin{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"k" "wheel" "info" "side"}
+  #k-struct .ks-wheel{min-height:calc(var(--F) * 2.4 + var(--E) * 2)}
+  #k-struct .ks-info{justify-self:start;align-self:start}
+}
+
+/* ── 摘要：拿掉直排標題與最後一句，內文縮小成畫面中間偏右的一欄；第一個字放大 ── */
+#story .story-grid{display:block;max-width:none;margin:0;padding:0}
+#story .story-body{width:min(340px,26vw);margin-left:52vw;font-size:clamp(14px,1.05vw,16px);line-height:1.85}
+#story .story-body p+p{margin-top:18px}
+/* 開頭「蝴蝶」兩字：放大成約三行高的首字，靠左浮動讓內文繞排，顏色和內文相同 */
+/* 浮動框的高度剛好等於兩行內文（行距 1.85 × 2 = 3.7em），第三行起就回到最左邊，不會留下空白 */
+.story-first .dropcap{float:left;margin:0 .18em 0 0;font-family:var(--title);font-weight:900;font-size:3.3em;line-height:1.1;height:1.11em;letter-spacing:.02em;color:inherit}
+.lang-en .story-first .dropcap{font-size:3.6em;line-height:1;height:1.02em;margin-right:.08em}
+@media (max-width:860px){#story .story-body{width:auto;margin:0 var(--gut)}}
+/* 摘要內文：煙霧進場（同「知蝶百識」）—— 一行一行由模糊、稍放大，淡入成清楚的字；開頭「蝴蝶」先從一團煙裡浮現 */
+#story .story-body [data-tx="lines"] .ln{overflow:visible}
+#story .story-body [data-tx="lines"] .ln>span{transform:scale(1.04) translateY(.15em);opacity:0;filter:blur(12px);
+  transition:opacity .9s ease,filter 1.1s ease,transform 1.2s cubic-bezier(.2,.8,.2,1);transition-delay:calc(.35s + var(--l) * 120ms)}
+#story .story-body [data-tx="lines"].in .ln>span{transform:none;opacity:1;filter:blur(0)}
+#story .story-body p:nth-child(3) .ln>span{transition-delay:calc(.75s + var(--l) * 120ms)}
+#story .story-first[data-tx="fade"]{opacity:0;filter:blur(12px);transform:scale(1.03);transition:opacity .9s ease,filter 1.1s ease,transform 1.2s cubic-bezier(.2,.8,.2,1)}
+#story .story-first[data-tx="fade"].in{opacity:1;filter:blur(0);transform:none}
+#story .story-first .dropcap{position:relative}
+#story .story-first .dropcap::after{content:"";position:absolute;left:50%;top:50%;width:2.2em;height:1.4em;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(200,196,186,.5),rgba(200,196,186,0));filter:blur(10px);opacity:0;transform:translate(-50%,-50%) scale(.4)}
+#story .story-first.in .dropcap::after{animation:smokeOut 1.6s ease-out both;--dx:.6em}
+@media (prefers-reduced-motion:reduce){#story .story-body [data-tx] , #story .story-body [data-tx] .ln>span{opacity:1!important;filter:none!important;transform:none!important}}
+
+/* 摘要跑馬燈：只留英文、沒有星號 */
+.mq-plain i{display:inline-block;width:3.5em;margin:0}
+
+/* ── 知識開頭：「蝴蝶」大字與「04 知識」拿掉，改成煙霧中慢慢浮現的「知蝶百識」（字級為內文的 1.5 倍） ── */
+.dock-space{height:44vh;align-items:flex-start;justify-content:center;padding:24vh var(--gut) 0}   /* 「知蝶百識」水平置中、在上方區域中段 */
+.smoke-t{position:relative;margin:0;font:900 clamp(24px,1.95vw,29px)/1.5 var(--title);letter-spacing:.5em;color:#111;text-align:center;margin-right:-.5em}   /* 抵銷最後一個字後面的字距，視覺上才真正置中 */
+#k-body.kb{padding-top:clamp(120px,20vh,220px)}   /* 分類資訊與內文往下移 */
+/* 介紹 → 知識：介紹畫面的下緣漸層淡出成米色，接上知識的背景（取代原本的跑馬燈） */
+.garden::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:44;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(246,244,239,0) 0%,rgba(246,244,239,.25) 35%,rgba(246,244,239,.7) 70%,var(--paper) 100%)}
+.smoke-t .sc{display:inline-block;opacity:0;filter:blur(16px);transform:translateY(.35em) scale(1.25);
+  transition:opacity .7s ease,filter .9s ease,transform 1s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i) * .12s)}   /* 加快：每字約 1 秒成形，字與字間隔 0.12 秒 */
+.smoke-t.in .sc{opacity:1;filter:blur(0);transform:none}
+/* 煙：幾團柔邊的灰白霧，從字的位置往外擴散、往上飄散後消失 */
+.smoke-t .sw{position:absolute;left:var(--x);top:50%;width:3.2em;height:2.2em;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(150,160,150,.55),rgba(150,160,150,0));filter:blur(8px);opacity:0;transform:translate(-50%,-50%) scale(.4)}
+.smoke-t.in .sw{animation:smokeOut 1.5s ease-out forwards;animation-delay:calc(var(--i) * .12s)}
+@keyframes smokeOut{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}20%{opacity:.9}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% - 1.6em)) scale(2.6)}}
+@media (prefers-reduced-motion:reduce){.smoke-t .sc{opacity:1;filter:none;transform:none}.smoke-t .sw{display:none}}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
@@ -788,3 +1301,485 @@ body.has-cursor .cursor{display:block}
   .pop{transform:none}
   #logoText{opacity:1}
 }
+
+/* ── 型態分類：拿掉「臺灣的」大字、科名轉輪＋數字點、拉桿；改回捲動換科（約每 80vh 換一科） ── */
+#k-family .ks-we,#k-family .kf-slot{display:none}
+#k-family.kf{height:420vh}
+@media (max-width:860px){#k-family.kf{height:420vh}#k-family .ks-pin{position:sticky;top:0;height:100vh}}
+
+/* ── 型態分類：拿掉「CLASSIFICATION — 型態分類」小標；說明＋種數改成橫向滑動的圖塊卡片（js/fx.js 的 drawFam） ── */
+#k-family .ks-k,#k-family .ks-info,#k-family .ks-side{display:none}
+.kf-row{position:absolute;left:0;right:0;top:50%;transform:translateY(-46%);pointer-events:none}
+.kf-track{display:flex;column-gap:clamp(20px,2.5vw,40px);width:max-content;will-change:transform}
+.kf-card{flex:none;display:flex;flex-direction:column;width:min(460px,78vw);height:min(70vh,600px);padding:clamp(22px,2.6vw,36px);border-radius:18px;
+  background:#E3F0D8;color:#0A3D2B;box-shadow:0 24px 50px -28px rgba(10,61,43,.45);transform-origin:50% 60%;will-change:transform,opacity;
+  transition:box-shadow .4s ease}
+.kf-card.on{box-shadow:0 30px 60px -24px rgba(10,61,43,.55)}
+.kf-cd-txt .ks-no{margin:0;font:500 12px/1.5 var(--sans);letter-spacing:.3em;color:#A8712A}
+.kf-cd-txt h4{margin:8px 0 6px;font:900 clamp(26px,2.2vw,34px)/1.4 var(--title);color:#0F7652}
+.kf-cd-txt .kf-w{margin:0 0 12px;font:700 13px/1.6 var(--hei);color:#A8712A}
+.kf-cd-txt .kf-ul{margin:0;padding:0;list-style:none}
+.kf-cd-txt .kf-ul li{padding:7px 0;border-top:1px solid rgba(10,61,43,.18);font:500 13px/1.6 var(--hei)}
+.kf-cd-num{margin-top:auto;padding-top:14px;border-top:1px solid rgba(10,61,43,.18)}
+.kf-cd-num .kf-n{--D:min(15vh,120px);display:flex;align-items:center;justify-content:space-between;opacity:1;transform:none}
+.kf-cd-num .kf-ico{grid-template-columns:repeat(7,clamp(18px,1.6vw,24px));gap:4px;justify-content:start}
+.kf-card .kf-ico img{opacity:0;transform:translateY(8px) scale(.6)}
+.kf-card.on .kf-ico img{opacity:1;transform:rotate(var(--rot))}
+@media (max-width:860px){#k-family .ks-pin{display:block}.kf-card{height:min(76vh,600px)}}
+
+/* ── 型態分類：滿版畫面輪替（取代卡片列） ── */
+.kf-row{display:none}
+#k-family .ks-pin{padding:0;display:block}
+.kf-scenes{position:absolute;inset:0;overflow:hidden}
+.kf-sc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;
+  transform:scale(1.18) rotate(-4deg);transition:opacity .9s ease,transform 1.2s cubic-bezier(.6,0,.2,1);overflow:hidden}
+.kf-sc:nth-child(1){background:radial-gradient(ellipse at 50% 40%,#E9F3E1,#CFE4C3)}
+.kf-sc:nth-child(2){background:radial-gradient(ellipse at 50% 40%,#E1EFD6,#BFDCB3)}
+.kf-sc:nth-child(3){background:radial-gradient(ellipse at 50% 40%,#E6F1DA,#C8E0B6)}
+.kf-sc:nth-child(4){background:radial-gradient(ellipse at 50% 40%,#DDEDD9,#B5D6AE)}
+.kf-sc:nth-child(5){background:radial-gradient(ellipse at 50% 40%,#E4EFDD,#C2DDBB)}
+.kf-sc.on{opacity:1;transform:none;z-index:2}
+.kf-sc.past{transform:scale(.9) rotate(4deg)}   /* 離開的畫面往另一個方向轉、縮小淡出 */
+.kf-sc-txt{position:relative;z-index:2;max-width:min(640px,86vw);text-align:center;color:#0A3D2B}
+.kf-sc-txt h4{margin:0 0 22px;font:900 clamp(56px,7vw,110px)/1.1 var(--title);letter-spacing:.06em;color:#0F7652}
+.kf-sc-txt ul{margin:0;padding:0;list-style:none}
+.kf-sc-txt li{margin:0;font:500 clamp(13px,1.05vw,16px)/2 var(--serif)}
+.kf-sc-cnt{margin:18px 0 0;font:500 14px/1.4 var(--sans);letter-spacing:.12em}
+.kf-sc-cnt b{font-weight:500;font-size:1.6em}
+.kf-sc .kf-sc-txt>*{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
+.kf-sc.on .kf-sc-txt>*{opacity:1;transform:none;transition-delay:.45s}
+.kf-sc.on .kf-sc-txt>:nth-child(2){transition-delay:.6s}
+.kf-sc.on .kf-sc-txt>:nth-child(3){transition-delay:.75s}
+/* 這一科的蝴蝶圖示：從畫面上方各處落下，彈一下後停在底部 */
+.kf-fall{position:absolute;inset:0;pointer-events:none}
+.kf-fall img{position:absolute;left:var(--x);bottom:calc(14px + var(--y) * .4);width:clamp(28px,2.6vw,40px);height:auto;opacity:0;
+  transform:translate(-50%,-110vh) rotate(var(--r))}
+.kf-sc.on .kf-fall img{animation:kfDrop 1.3s cubic-bezier(.5,0,.75,0) both,kfBounce .5s ease-out both;animation-delay:calc(.5s + var(--k) * 70ms),calc(1.8s + var(--k) * 70ms)}
+@keyframes kfDrop{from{opacity:1;transform:translate(-50%,-110vh) rotate(0deg)}to{opacity:1;transform:translate(-50%,0) rotate(var(--r))}}
+@keyframes kfBounce{0%{transform:translate(-50%,0) rotate(var(--r))}40%{transform:translate(-50%,-18px) rotate(var(--r))}100%{opacity:1;transform:translate(-50%,0) rotate(var(--r))}}
+
+/* ── 生活史圖卡：左右滿版、彼此之間沒有縫隙（全部停在同一高度，一張完全蓋住前一張） ── */
+#k-cycle.kc{padding:0 0 18vh}
+.kc-stack{max-width:none}
+.kc-card{top:68px;height:calc(100vh - 68px);margin-bottom:0}
+/* 每張卡片上緣都有往上投的陰影：疊到前一張上面時，看得出是「一張壓在一張上」 */
+.kc-in{border-radius:0;box-shadow:0 -18px 36px -12px rgba(10,61,43,.35),0 -2px 6px rgba(10,61,43,.18)}
+.kc-card:first-child .kc-in{box-shadow:0 -10px 30px -14px rgba(10,61,43,.25)}
+
+/* ── 型態分類 v3：五個區塊上下相接、跟著捲動往上走；左右純色塊往中間擠壓；圖示是鋪滿的浮水印 ── */
+#k-family.kf{height:auto}
+#k-family .ks-pin{position:relative;height:auto;overflow:visible}
+.kf-scenes{position:relative;inset:auto;overflow:visible;background:#0A3D2B}   /* 擠壓時露出的純色塊 */
+.kf-sc{position:relative;inset:auto;height:100vh;opacity:1;transform:none;transition:none;display:block;overflow:hidden;background:none!important;--sq:0%}
+.kf-sc.past{transform:none}
+.kf-sc-body{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  clip-path:inset(0 var(--sq) 0 var(--sq));will-change:clip-path}
+.kf-sc:nth-child(1) .kf-sc-body{background:radial-gradient(ellipse at 50% 40%,#E9F3E1,#CFE4C3)}
+.kf-sc:nth-child(2) .kf-sc-body{background:radial-gradient(ellipse at 50% 40%,#E1EFD6,#BFDCB3)}
+.kf-sc:nth-child(3) .kf-sc-body{background:radial-gradient(ellipse at 50% 40%,#E6F1DA,#C8E0B6)}
+.kf-sc:nth-child(4) .kf-sc-body{background:radial-gradient(ellipse at 50% 40%,#DDEDD9,#B5D6AE)}
+.kf-sc:nth-child(5) .kf-sc-body{background:radial-gradient(ellipse at 50% 40%,#E4EFDD,#C2DDBB)}
+.kf-wm{position:absolute;inset:-4%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(6,1fr);place-items:center;pointer-events:none}
+.kf-wm img{width:clamp(44px,5vw,80px);height:auto;opacity:.09;transform:rotate(var(--r))}
+.kf-fall{display:none}
+
+/* 型態分類 v4：背景統一米色；往中間擠壓的色塊是偏黃橙的米色；浮水印圖示放大鋪滿，間距約兩個字 */
+.kf-scenes{background:#EAD3A6}
+.kf-sc .kf-sc-body{background:var(--paper)!important}
+.kf-wm{inset:0;padding:32px;gap:32px;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));place-items:stretch}
+.kf-wm img{width:100%;height:100%;object-fit:contain;opacity:.08}
+@media (max-width:860px){.kf-wm{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;padding:24px}.kf-wm img:nth-child(n+13){display:none}}
+
+/* 生活史圖卡：疊好停住後陰影收起來（只在往上滑、正在蓋住前一張時有陰影） */
+.kc-in{transition:box-shadow .35s ease}
+.kc-card.stuck .kc-in{box-shadow:none}
+
+/* 型態分類 v5：純色背景、不擠壓；文字改成靠左的編排（大標＋疏朗的小字），圖示變小排在文字下方 */
+.kf-scenes{background:var(--paper)}
+.kf-sc .kf-sc-body{clip-path:none;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 var(--gut) 0 max(var(--gut),18vw)}
+.kf-sc-txt{max-width:min(560px,80vw);text-align:left}
+.kf-sc-txt h4{margin:0 0 clamp(26px,4vh,44px);font-size:clamp(46px,5.4vw,84px);line-height:1.35;letter-spacing:.04em}
+.kf-sc-txt li{font-size:clamp(14px,1.05vw,16px);line-height:2.7;letter-spacing:.06em;color:rgba(10,61,43,.8)}
+.kf-sc-cnt{margin-top:clamp(16px,3vh,28px)}
+.kf-wm{order:2;position:static;display:flex;flex-wrap:wrap;gap:10px;inset:auto;padding:0;margin-top:clamp(18px,3vh,30px);max-width:min(560px,80vw)}
+.kf-wm img{width:clamp(22px,1.8vw,28px);height:auto;opacity:.85;transform:rotate(var(--r))}
+.kf-sc .kf-wm img{opacity:0;transform:translateY(8px) rotate(var(--r));transition:opacity .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.kf-sc.on .kf-wm img{opacity:.85;transform:rotate(var(--r));transition-delay:.9s}
+@media (max-width:860px){.kf-sc .kf-sc-body{padding:0 var(--gut)}.kf-wm img:nth-child(n+13){display:block}}
+
+/* ── 型態分類 v6：一個畫面＝左側科別按鈕＋中間文字（煙霧浮現）＋右側互動圖示框 ── */
+#k-family.kf{height:auto}
+#k-family .ks-pin{position:relative;height:100vh;min-height:620px;overflow:hidden;display:block;padding:0}
+.kf-scenes{display:none}
+.kf-ui{position:absolute;inset:0;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);align-items:center;gap:clamp(28px,4vw,72px);padding:90px var(--gut) 60px}
+/* 左側長橢圓按鈕 */
+.kf-tabs{display:flex;flex-direction:column;gap:14px}
+.kf-tab{min-width:118px;padding:12px 22px;border:1.5px solid #0F7652;border-radius:999px;background:var(--paper);color:#0F7652;font:700 15px/1.2 var(--title);letter-spacing:.08em;
+  cursor:pointer;transition:background .3s ease,color .3s ease,transform .3s ease}
+.kf-tab:hover,.kf-tab.on{background:#0F7652;color:var(--paper)}
+.kf-tab:active{transform:scale(.96)}
+.kf-tab:focus-visible{outline:2px dashed #0F7652;outline-offset:4px}
+/* 中間文字：疊在一起，只顯示目前這科；出現時從煙霧中浮現 */
+.kf-stage{display:grid;align-items:center}
+.kf-txt{grid-area:1/1;visibility:hidden;color:#0A3D2B}
+.kf-txt.on{visibility:visible}
+.kf-txt h4{margin:0 0 clamp(22px,3.5vh,40px);font:900 clamp(46px,5vw,80px)/1.3 var(--title);letter-spacing:.04em;color:#0F7652}
+.kf-txt ul{margin:0;padding:0;list-style:none}
+.kf-txt li{font:500 clamp(14px,1.05vw,16px)/2.5 var(--serif);letter-spacing:.06em;color:rgba(10,61,43,.8)}
+.kf-txt>*,.kf-txt li{opacity:0}
+.kf-txt.on h4{animation:gScIn .9s cubic-bezier(.2,.8,.2,1) both}
+.kf-txt.on>*,.kf-txt.on li{opacity:1}   /* 動畫只寫了起點，終點要是看得見的狀態（之前停在透明 → 文字不見） */
+.kf-txt.on li{animation:gBlurIn .8s ease both}
+.kf-txt.on li:nth-child(1){animation-delay:.18s}.kf-txt.on li:nth-child(2){animation-delay:.28s}
+.kf-txt.on li:nth-child(3){animation-delay:.38s}.kf-txt.on li:nth-child(4){animation-delay:.48s}
+.kf-txt.on .kf-sc-cnt{animation:gBlurIn .8s ease .58s both}
+/* 右側互動框 */
+.kf-box{position:relative;aspect-ratio:1;width:min(100%,46vh);justify-self:center;border:1.5px solid rgba(15,118,82,.45);border-radius:28px;overflow:hidden;cursor:crosshair;
+  background:rgba(255,255,255,.35);transition:border-color .3s ease,box-shadow .4s ease}
+.kf-box.hot{border-color:#0F7652;box-shadow:0 20px 40px -24px rgba(15,118,82,.5)}
+.kf-cross{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);transition:left .12s linear,top .12s linear;z-index:2}
+.kf-cross::before,.kf-cross::after{content:"";position:absolute;left:50%;top:50%;background:#0F7652}
+.kf-cross::before{width:100%;height:1.5px;transform:translate(-50%,-50%)}
+.kf-cross::after{width:1.5px;height:100%;transform:translate(-50%,-50%)}
+.kf-bugs{position:absolute;inset:0}
+.kf-bugs img{position:absolute;width:clamp(30px,3vw,46px);height:auto;transition:left .5s cubic-bezier(.2,.8,.2,1),top .5s cubic-bezier(.2,.8,.2,1),transform .5s cubic-bezier(.2,.8,.2,1);
+  opacity:calc(.45 + var(--z) * .45);animation:kfPop .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes kfPop{from{opacity:0;scale:.2}}
+@media (max-width:860px){
+  .kf-ui{grid-template-columns:minmax(0,1fr);align-content:center;gap:24px;padding:84px var(--gut) 40px}
+  .kf-tabs{flex-direction:row;flex-wrap:wrap}.kf-tab{min-width:0;padding:8px 14px;font-size:13px}
+  .kf-box{width:min(70vw,30vh)}
+}
+
+/* 型態分類按鈕改成直式：直排文字的細長橢圓，由上往下排 */
+.kf-tabs{gap:12px;align-self:center}
+.kf-tab{min-width:0;writing-mode:vertical-rl;padding:16px 10px;letter-spacing:.3em;font-size:15px;line-height:1}
+@media (max-width:860px){.kf-tabs{flex-direction:row}.kf-tab{padding:12px 8px;font-size:13px}}
+
+/* 生活史圖卡：上方左右兩角改成圓角；寬度由 js 從 80% 撐到 100%（置中）；說明文字放大、排成較窄的一欄、放在中欄的中上方 */
+.kc-in{margin:0 auto;border-radius:28px 28px 0 0}
+.kc-p{align-self:start;margin-top:clamp(40px,10vh,110px);max-width:28em;font-size:clamp(17px,1.4vw,21px);line-height:2.1;letter-spacing:.04em}
+
+/* 懸蛹的說明：不再跳出蓋住整頁的視窗，改成畫面左側的對話框（右下角有尾巴指向蛹） */
+.pupa-note,.pupa-end{inset:auto;left:var(--gut);top:36%;width:min(440px,32vw);padding:0;display:block;background:none!important}
+.pupa-note[hidden]{display:none}
+.pupa-note-in{position:relative;max-width:none;padding:clamp(20px,2vw,30px) clamp(22px,2.2vw,32px);border:1.5px solid #0F7652;border-radius:18px;background:var(--paper);
+  box-shadow:0 18px 40px -26px rgba(10,61,43,.45)}
+.pupa-note-in::after{content:"";position:absolute;right:28px;bottom:-14px;width:24px;height:24px;background:var(--paper);
+  border-right:1.5px solid #0F7652;border-bottom:1.5px solid #0F7652;transform:skewX(-35deg) rotate(45deg)}   /* 對話框的尾巴 */
+.pupa-note h3{font-size:clamp(20px,1.7vw,26px)}
+.pupa-note p:not(.pupa-note-k){margin-bottom:18px;font-size:clamp(14px,1.05vw,16px)}
+@media (max-width:860px){.pupa-note,.pupa-end{left:var(--gut);right:var(--gut);width:auto;top:auto;bottom:110px}}
+
+/* 地圖區塊中間的「待開發」 */
+.zi-todo{position:absolute;left:50%;top:42%;z-index:2;margin:0;transform:translate(-50%,-50%);font:500 clamp(22px,2.2vw,34px)/1.5 var(--title);letter-spacing:.5em;margin-right:-.5em;color:rgba(234,228,216,.55);pointer-events:none;white-space:nowrap}
+
+/* 蝴蝶構造右側的直排部位名稱：給明確的寬度（直排字的寬度瀏覽器常算不準 → 右邊被切），離畫面右緣與上方都留空間 */
+#k-struct .ks-vert{width:calc(var(--V) * 1.3 + 44px);margin:clamp(12px,3vh,32px) max(4vw,40px) 0 0;
+  -webkit-mask-image:linear-gradient(transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(transparent,#000 4%,#000 96%,transparent)}
+#k-struct .kv-it{width:100%;padding-right:calc(var(--V) * .15);padding-top:calc(var(--V) * .45)}
+
+/* 「從利用，轉為保育」：拿掉大標與薄霧互動，文字置中；背景圖固定在視窗上（捲動時區塊像一扇窗在圖上移動，和前後的米色區塊產生視差） */
+.learn>#k-conserve{background:#3E7A3A url(../assets/conserve-bg.jpg) center/cover no-repeat fixed}
+#k-conserve .kq-grid{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+#k-conserve .kq-txt{max-width:min(620px,86vw)}
+#k-conserve .kq-txt p:last-child{text-shadow:0 0 18px rgba(246,244,239,.95),0 0 4px rgba(246,244,239,.8)}
+@media (hover:none){.learn>#k-conserve{background-attachment:scroll}}   /* 手機不支援固定背景，改回一般 */
+
+/* 蝴蝶構造：直排部位名稱移到右半部的左側（靠近中間分隔線） */
+#k-struct .ks-vert{justify-self:start;margin:clamp(30px,6vh,60px) 0 0 clamp(16px,2vw,32px)}
+
+/* 摘要：沿路線爬行的毛毛蟲（js/fx.js 的 drawCrawl） */
+.story-crawl{position:absolute;left:0;top:0;z-index:2;width:clamp(56px,5vw,80px);height:auto;opacity:0;pointer-events:none;will-change:transform;filter:drop-shadow(0 6px 8px rgba(0,0,0,.4))}
+
+/* 「從利用，轉為保育」的內文改成白字，陰影改成深色才看得清楚 */
+#k-conserve .kq-txt p,#k-conserve .kq-txt p:last-child{color:#fff;text-shadow:0 1px 3px rgba(10,40,20,.6),0 0 18px rgba(10,40,20,.45)}
+
+/* 摘要：毛毛蟲排隊繞行的路線（看不見，只用來定位），放在左半邊 */
+.story-path{position:absolute;left:8vw;top:50%;width:min(34vw,460px);height:auto;transform:translateY(-50%);fill:none;stroke:none;pointer-events:none}
+.story-crawl{width:clamp(44px,3.6vw,60px)}
+
+/* ── 六種蝴蝶的一生（生活史之後）：一列一種蝴蝶，四欄是卵、幼蟲、蛹、成蟲 ── */
+.kg{position:relative;padding:clamp(90px,14vh,160px) 0;background:var(--paper)}
+.kg-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,80px);align-items:end;margin-bottom:clamp(36px,6vh,64px)}
+.kg-t{margin:0;font:900 36px/1.5 var(--title);letter-spacing:.04em;color:#0F7652}
+.kg-sub{margin:0;font:500 clamp(14px,1.05vw,16px)/1.9 var(--serif);color:var(--ink-soft)}
+.kg-grid{border-top:1.5px solid #0F7652}
+.kg-row{display:grid;grid-template-columns:minmax(150px,1.2fr) repeat(4,minmax(0,1fr));align-items:stretch;border-bottom:1px solid rgba(15,118,82,.2)}
+.kg-hd span{padding:14px 0;text-align:center;font:700 14px/1 var(--title);letter-spacing:.3em;color:#A8712A}
+.kg-name{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:18px 12px 18px 0}
+.kg-name b{font:900 clamp(18px,1.5vw,22px)/1.3 var(--title);color:#0F7652}
+.kg-name i{font:italic 400 12px/1.3 var(--sans);color:var(--ink-mute)}
+.kg-cell{display:flex;align-items:center;justify-content:center;height:clamp(110px,15vh,150px);margin:0;padding:12px;border-left:1px solid rgba(15,118,82,.12)}
+.kg-cell img{max-width:72%;max-height:100%;object-fit:contain;transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.kg-cell .kg-larva{transform:rotate(90deg);max-height:86%}   /* 幼蟲原圖是直的（頭朝下），轉成橫的 */
+.kg-row:not(.kg-hd):hover{background:rgba(110,178,124,.08)}
+.kg-row:not(.kg-hd):hover .kg-cell img{transform:scale(1.12)}
+.kg-row:not(.kg-hd):hover .kg-cell .kg-larva{transform:rotate(90deg) scale(1.12)}
+/* 進場：每一列依序淡入 */
+.kg-row:not(.kg-hd){opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1),background .3s ease}
+.kg.in .kg-row:not(.kg-hd){opacity:1;transform:none}
+.kg.in .kg-row:nth-child(3){transition-delay:.1s}.kg.in .kg-row:nth-child(4){transition-delay:.2s}.kg.in .kg-row:nth-child(5){transition-delay:.3s}
+.kg.in .kg-row:nth-child(6){transition-delay:.4s}.kg.in .kg-row:nth-child(7){transition-delay:.5s}
+@media (max-width:860px){
+  .kg-head{grid-template-columns:minmax(0,1fr)}
+  .kg-row{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .kg-name{grid-column:1 / -1;flex-direction:row;align-items:baseline;padding:14px 0 4px}
+  .kg-hd span:first-child{display:none}
+  .kg-cell{height:90px;border-left:0}
+}
+@media (prefers-reduced-motion:reduce){.kg-row:not(.kg-hd){opacity:1;transform:none}}
+
+/* 毛毛蟲路線改成鋪滿整個摘要區塊（依手繪紅線）；毛毛蟲放大 3 倍 */
+.story-path{left:0;top:0;width:100%;height:100%;transform:none}
+.story-crawl{width:clamp(132px,10.8vw,180px)}
+
+/* ── 六種蝴蝶的一生 v2：六朵「花」左右交錯，中心成蟲、四周卵／幼蟲／蛹彈出，一條彎曲線串起來 ── */
+.kg-grid[hidden]{display:none}
+.kg-flow{position:relative;--R:clamp(120px,13vw,190px)}
+.kg-line{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.kg-line path{fill:none;stroke:#0F7652;stroke-width:1.5;stroke-linecap:round;opacity:.55}
+.kg-fl{position:relative;width:calc(var(--R) * 2 + 160px);height:calc(var(--R) * 2 + 150px);display:flex;align-items:center;justify-content:center}
+.kg-fl+.kg-fl{margin-top:calc(var(--R) * -.55)}   /* 錯位：下一朵往上疊一點 */
+.kg-fl.l{margin-left:4%}
+.kg-fl.r{margin-left:auto;margin-right:4%}
+.kg-core{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.kg-core img{width:clamp(120px,11vw,170px);height:auto;filter:drop-shadow(0 12px 14px rgba(40,50,40,.22))}
+.kg-core b{font:900 clamp(18px,1.5vw,22px)/1.3 var(--title);color:#0F7652}
+.kg-core i{font:italic 400 12px/1.3 var(--sans);color:var(--ink-mute)}
+.kg-sat{position:absolute;left:50%;top:50%;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;width:clamp(80px,7.5vw,110px);
+  transform:translate(-50%,-50%) scale(.2);opacity:0;transition:transform .9s cubic-bezier(.3,1.5,.5,1),opacity .4s ease;transition-delay:calc(var(--k) * .12s)}
+.kg-fl.in .kg-sat{opacity:1;transform:translate(calc(-50% + var(--x) * var(--R)),calc(-50% + var(--y) * var(--R))) scale(1)}
+.kg-sat img{max-width:100%;max-height:90px;object-fit:contain}
+.kg-sat .kg-larva{transform:rotate(90deg)}
+.kg-sat figcaption{font:700 12px/1 var(--title);letter-spacing:.2em;color:#A8712A}
+.kg-core{opacity:0;transform:scale(.85);transition:opacity .6s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.kg-fl.in .kg-core{opacity:1;transform:none}
+@media (max-width:860px){.kg-flow{--R:clamp(90px,26vw,130px)}.kg-fl{width:100%;margin:0!important}.kg-fl+.kg-fl{margin-top:0!important}}
+@media (prefers-reduced-motion:reduce){.kg-sat,.kg-core{transition:none}}
+
+/* 摘要的毛毛蟲改畫在 canvas 上（身體會跟著路線彎曲） */
+.story-crawl-cv{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.4))}
+
+/* 「知蝶百識」再加快：每字約 0.55 秒成形、字與字間隔 0.07 秒；煙 0.9 秒散完 */
+.smoke-t .sc{transition:opacity .4s ease,filter .5s ease,transform .55s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i) * .07s)}
+.smoke-t.in .sw{animation-duration:.9s;animation-delay:calc(var(--i) * .07s)}
+
+/* 六種蝴蝶的一生 v3：拿掉標題；中心成蟲放大；卵→蛹→幼蟲依序彈出，帶旋轉與回彈 */
+#k-grow .kg-t{display:none}
+#k-grow .kg-head{grid-template-columns:minmax(0,1fr)}
+.kg-flow{--R:clamp(170px,16vw,240px)}
+.kg-fl{width:calc(var(--R) * 2 + 200px);height:calc(var(--R) * 2 + 190px)}
+.kg-core img{width:clamp(180px,15vw,250px)}
+.kg-core b{font-size:clamp(20px,1.8vw,26px)}
+.kg-line path{stroke-width:2;opacity:.7}
+.kg-sat{transition:opacity .25s ease;transition-delay:calc(var(--k) * .28s)}
+.kg-fl.in .kg-sat{animation:kgPop .9s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(.25s + var(--k) * .28s)}
+@keyframes kgPop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.1) rotate(-60deg)}
+  55%{opacity:1;transform:translate(calc(-50% + var(--x) * var(--R) * 1.12),calc(-50% + var(--y) * var(--R) * 1.12)) scale(1.18) rotate(calc(var(--rot) + 12deg))}
+  75%{transform:translate(calc(-50% + var(--x) * var(--R) * .96),calc(-50% + var(--y) * var(--R) * .96)) scale(.94) rotate(calc(var(--rot) - 6deg))}
+  100%{opacity:1;transform:translate(calc(-50% + var(--x) * var(--R)),calc(-50% + var(--y) * var(--R))) scale(1) rotate(var(--rot))}}
+.kg-sat img{max-height:110px}
+@media (max-width:860px){.kg-flow{--R:clamp(100px,28vw,140px)}.kg-core img{width:clamp(130px,36vw,170px)}}
+
+/* 六種蝴蝶的一生：開頭兩行大字左右分開前進＋明暗切換（js/fx.js 的 drawGrowHead） */
+#k-grow{padding-top:0}
+#k-grow .kg-head{display:block;position:relative;height:200vh;width:100vw;margin:0 0 clamp(40px,6vh,70px) calc(50% - 50vw)}   /* 滿版（不受 .wrap 寬度限制），黑底時整個畫面都是黑的 */
+.kg-pin{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;gap:2vh;overflow:hidden;background:var(--paper);transition:background .6s ease}
+.kg-ln{margin:0;white-space:nowrap;font:900 clamp(40px,6.4vw,110px)/1.15 var(--title);letter-spacing:.02em;color:#111;will-change:transform;transition:color .6s ease}
+.kg-ln1{padding-left:8vw}
+.kg-ln2{align-self:flex-end;padding-right:6vw;font-size:clamp(28px,4.2vw,72px)}
+.kg-head.dark .kg-pin{background:#111}
+.kg-head.dark .kg-ln{color:var(--paper)}
+@media (max-width:860px){.kg-ln{white-space:normal}.kg-ln1,.kg-ln2{padding:0 var(--gut)}}
+
+/* ── 開頭兩行：同樣大小，初始綠色，切到深色底時變米色 ── */
+.kg-ln,.kg-ln2{font-size:clamp(34px,4.6vw,80px);color:#0F7652}
+.kg-head.dark .kg-ln{color:var(--paper)}
+
+/* ── 六種蝴蝶輪播（深色底）：大標＝蝴蝶名，主圖＝成蟲，游標靠近時彈出卵／蛹／幼蟲；底下進度線＋節點 ── */
+.kg-flow{display:none}
+#k-grow{padding-bottom:0}
+.kgs{position:relative;width:100vw;margin-left:calc(50% - 50vw)}
+.kgs-pin{position:sticky;top:0;height:100vh;overflow:hidden;background:#1C1A17;color:var(--paper)}
+.kgs-track{display:flex;height:100%;transition:transform 1s cubic-bezier(.7,0,.2,1)}
+.kgs-sc{flex:none;width:100vw;height:100%;position:relative;display:flex;flex-direction:column;align-items:center;padding-top:clamp(84px,12vh,130px)}
+.kgs-no{margin:0 0 6px;font:500 12px/1 var(--sans);letter-spacing:.3em;color:rgba(246,244,239,.5)}
+.kgs-t{margin:0;font:900 clamp(56px,8vw,140px)/1.05 var(--title);letter-spacing:.04em;color:#E9C58B}
+.kgs-la{margin:8px 0 0;font:italic 400 14px/1 var(--sans);color:rgba(246,244,239,.55)}
+.kgs-sc>*:not(.kgs-stage){opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.kgs-sc.on>*:not(.kgs-stage){opacity:1;transform:none;transition-delay:.45s}
+.kgs-stage{position:relative;width:min(560px,80vw);height:min(44vh,400px);margin-top:clamp(10px,2vh,24px);cursor:crosshair}
+.kgs-adult{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.kgs-adult img{max-width:60%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 26px rgba(0,0,0,.45));transition:filter .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.kgs-sc.reveal .kgs-adult img{filter:grayscale(1) brightness(.75) drop-shadow(0 20px 26px rgba(0,0,0,.45));transform:scale(.92)}
+.kgs-sat{position:absolute;left:50%;top:50%;margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;width:clamp(90px,9vw,140px);
+  opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-40deg);transition:transform .7s cubic-bezier(.3,1.6,.5,1),opacity .3s ease;pointer-events:none}
+.kgs-sat img{max-width:100%;max-height:110px;object-fit:contain}
+.kgs-sat .kg-larva{transform:rotate(90deg)}
+.kgs-sat figcaption{font:700 12px/1 var(--title);letter-spacing:.2em;color:#E9C58B}
+.kgs-sc.reveal .kgs-sat{opacity:1}
+.kgs-sc.reveal .kgs-s0{transform:translate(calc(-50% - 230%),calc(-50% - 40%)) rotate(-8deg);transition-delay:0s}     /* 卵：左上 */
+.kgs-sc.reveal .kgs-s2{transform:translate(calc(-50% - 200%),calc(-50% + 70%)) rotate(6deg);transition-delay:.1s}      /* 蛹：左下 */
+.kgs-sc.reveal .kgs-s1{transform:translate(calc(-50% + 220%),calc(-50% + 20%)) rotate(-4deg);transition-delay:.2s}     /* 幼蟲：右 */
+/* 最後一個畫面：型態分類（參考 ABOUT 的編排：置中大標＋兩行小字） */
+.kgs-end{justify-content:center;padding-top:0}
+.kgs-big{margin:0 0 clamp(26px,5vh,48px);font:900 clamp(64px,10vw,170px)/1 var(--title);letter-spacing:.06em;color:var(--paper)}
+.kgs-txt{max-width:min(520px,80vw);margin:0;text-align:center;font:700 clamp(15px,1.2vw,18px)/1.8 var(--serif);color:rgba(246,244,239,.85)}
+/* 進度線：一條線，每個畫面一個節點 */
+.kgs-bar{position:absolute;left:12vw;right:12vw;bottom:clamp(30px,6vh,56px);height:2px;background:rgba(246,244,239,.18)}
+.kgs-fill{position:absolute;inset:0;background:#E9C58B;transform-origin:0 50%;transform:scaleX(0)}
+.kgs-dot{position:absolute;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:#1C1A17;border:1.5px solid rgba(246,244,239,.4);transition:background .4s,border-color .4s,transform .4s}
+.kgs-dot span{position:absolute;left:50%;top:16px;transform:translateX(-50%);font:500 11px/1 var(--sans);letter-spacing:.1em;color:rgba(246,244,239,.45)}
+.kgs-dot.past{background:#E9C58B;border-color:#E9C58B}
+.kgs-dot.on{background:#E9C58B;border-color:#E9C58B;transform:scale(1.5)}
+.kgs-dot.on span{color:#E9C58B}
+
+/* ── 型態分類：深色底的五張圖卡 ── */
+#k-family{background:#1C1A17}
+#k-family .ks-pin{height:auto;min-height:0;overflow:visible;padding:clamp(60px,10vh,120px) var(--gut) clamp(90px,14vh,160px)}
+.kf-ui{display:none}
+.kf-deck{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(12px,1.4vw,22px)}
+.kf-dc{display:flex;flex-direction:column;min-height:min(62vh,520px);padding:clamp(20px,1.8vw,28px);border:1px solid rgba(246,244,239,.14);border-radius:18px;background:#26231F;color:var(--paper);
+  opacity:0;transform:translateY(60px);transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1),border-color .3s ease,box-shadow .4s ease;transition-delay:calc(var(--k) * .1s)}
+.kf-deck.in .kf-dc{opacity:1;transform:none}
+.kf-deck.in .kf-dc:hover{transform:translateY(-10px);border-color:#E9C58B;box-shadow:0 24px 40px -20px rgba(0,0,0,.6);transition-delay:0s}
+.kf-dc-no{margin:0;font:500 12px/1 var(--sans);letter-spacing:.3em;color:#E9C58B}
+.kf-dc h4{margin:14px 0 16px;font:900 clamp(24px,2vw,32px)/1.3 var(--title);color:#6EB27C}
+.kf-dc ul{margin:0;padding:0;list-style:none}
+.kf-dc li{padding:9px 0;border-top:1px solid rgba(246,244,239,.1);font:500 13px/1.7 var(--serif);color:rgba(246,244,239,.78)}
+.kf-dc-ft{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:auto;padding-top:16px}
+.kf-dc-ico{display:flex;flex-wrap:wrap;gap:4px;max-width:60%}
+.kf-dc-ico img{width:20px;height:auto;filter:brightness(0) invert(1) sepia(.5) saturate(2) hue-rotate(40deg);opacity:.75}
+.kf-dc-ft b{font:500 14px/1 var(--sans);color:var(--paper)}
+.kf-dc-ft b b{font-size:2.2em;font-weight:500;color:#E9C58B}
+@media (max-width:1100px){.kf-deck{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.kf-deck{grid-template-columns:minmax(0,1fr)}.kf-dc{min-height:0}}
+
+/* 開頭兩行：捲動距離縮短、兩行靠近一點、下方不留空白（直接接深色輪播） */
+#k-grow .kg-head{height:150vh;margin-bottom:0}
+.kg-pin{gap:.6vh}
+.kg-head.dark .kg-pin{background:#1C1A17}   /* 和輪播同一個深色，接起來看不出接縫 */
+/* 輪播：彈出的卵／蛹／幼蟲放大，位置依手繪：卵在左、蛹在下方偏左、幼蟲在右 */
+.kgs-stage{width:min(760px,90vw);height:min(52vh,460px)}
+.kgs-sat{width:clamp(150px,13vw,210px);gap:10px}
+.kgs-sat img{max-height:170px}
+.kgs-sat figcaption{font-size:clamp(15px,1.2vw,18px);letter-spacing:.25em}
+.kgs-sc.reveal .kgs-s0{transform:translate(calc(-50% - min(24vw,300px)),calc(-50% - 6vh)) rotate(-8deg)}
+.kgs-sc.reveal .kgs-s2{transform:translate(calc(-50% - min(9vw,110px)),calc(-50% + min(20vh,190px))) rotate(6deg)}
+.kgs-sc.reveal .kgs-s1{transform:translate(calc(-50% + min(25vw,320px)),calc(-50% + 4vh)) rotate(-4deg)}
+
+/* ── 型態分類 v8：深色 → 米色的過渡；五張米色圖卡 sticky 疊起來（頂端錯開、帶陰影），內文錯位、傾斜 30° 的圖示帶隨捲動移動 ── */
+#k-family{background:linear-gradient(#1C1A17 0,#1C1A17 18%,var(--paper) 60%)}
+#k-family .ks-pin{padding:clamp(40px,8vh,90px) clamp(16px,3vw,48px) 12vh}
+.kf-deck{display:block}
+.kf-dc{position:sticky;top:calc(76px + var(--k) * 54px);height:calc(100vh - 110px - var(--k) * 30px);margin-bottom:28vh;
+  min-height:0;padding:0;border:0;background:none;opacity:1;transform:none;transition:none}
+.kf-dc:last-child{margin-bottom:0}
+.kf-deck.in .kf-dc{opacity:1;transform:none}
+.kf-deck.in .kf-dc:hover{transform:none;box-shadow:none}
+.kf-dc-in{position:relative;height:100%;overflow:hidden;padding:clamp(18px,2.4vh,26px) clamp(24px,4vw,64px);border-radius:40px 40px 0 0;background:var(--paper);color:#0A3D2B;
+  box-shadow:0 -14px 34px -10px rgba(10,30,20,.35),0 -2px 6px rgba(10,30,20,.12)}
+.kf-dc:last-child .kf-dc-in{border-radius:40px;box-shadow:0 -14px 34px -10px rgba(10,30,20,.35),0 30px 60px -20px rgba(10,30,20,.45)}   /* 最後一張背後有陰影 */
+.kf-dc-no{margin:0;font:500 14px/1.2 var(--sans);letter-spacing:.2em;color:#A8712A}
+.kf-dc h4{position:relative;z-index:1;margin:clamp(14px,3vh,30px) 0 clamp(14px,2.5vh,26px);font:900 clamp(40px,4.4vw,72px)/1.2 var(--title);color:#0F7652}
+.kf-dc ul{position:relative;z-index:1;max-width:min(560px,56%)}
+.kf-dc li{width:fit-content;max-width:100%;margin-left:calc(var(--o) * 2.2em);padding:6px 0;border-top:0;font:500 clamp(14px,1.05vw,16px)/1.8 var(--serif);color:rgba(10,61,43,.82)}   /* 錯位：每一行往右退一點 */
+.kf-dc-cnt{position:relative;z-index:1;margin:clamp(12px,2.5vh,24px) 0 0;font:500 15px/1 var(--sans);color:#0A3D2B}
+.kf-dc-cnt b{font-size:2.6em;font-weight:500;color:#0F7652}
+/* 傾斜 30° 的圖示帶：在卡片右下的空白處，隨捲動左右移動 */
+.kf-band{position:absolute;right:-20%;bottom:8%;width:95%;height:clamp(60px,9vh,96px);transform:rotate(-30deg);transform-origin:100% 100%;overflow:hidden;
+  background:rgba(15,118,82,.07);border-top:1px solid rgba(15,118,82,.2);border-bottom:1px solid rgba(15,118,82,.2)}
+.kf-band-in{display:flex;align-items:center;gap:clamp(18px,2vw,30px);height:100%;width:max-content;padding:0 20px;will-change:transform}
+.kf-band-in img{width:clamp(38px,3.2vw,52px);height:auto;filter:none;opacity:.85}
+@media (max-width:860px){.kf-dc ul{max-width:100%}.kf-dc li{margin-left:calc(var(--o) * .8em)}.kf-band{width:140%;bottom:2%}}
+
+/* 兩行大字 → 深色輪播：整段底色就是深色（米色只由大字區的固定畫面自己畫），兩塊之間不留任何空隙 → 轉場時不會閃出米色 */
+.learn>#k-grow,#k-grow{background:#1C1A17;padding:0}
+#k-grow>.wrap{padding-top:0;padding-bottom:0}
+#k-grow .kg-head{margin-bottom:0}
+#k-grow .kgs{margin-top:-1px}
+
+/* 天敵與常識：右邊的大標＋說明不再黏在畫面上（sticky），和左邊清單一起正常捲動，相對位置固定 */
+.kfaq-l{position:relative;top:auto;align-self:start}
+
+/* LIFE CYCLE：超大英文字（參考 EIGHT / JOURNAL 的編排）——第一行在中間偏右，第二行更大、往左超出畫面 */
+.kg-pin{justify-content:center;gap:0}
+.kg-ln,.kg-ln2{font:900 clamp(110px,21vw,380px)/.86 'Cyrene',var(--sans);letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap}
+.kg-ln1{align-self:flex-start;padding:0 0 0 30vw}
+.kg-ln2{align-self:flex-start;padding:0;margin-left:-4vw}
+.kg-pin,.kg-ln{transition:background .5s ease,color .5s ease}
+@media (max-width:860px){.kg-ln,.kg-ln2{font-size:28vw;white-space:nowrap}.kg-ln1{padding-left:18vw}}
+
+/* LIFE CYCLE：顏色改由 js 依捲動位置直接計算，不再用時間漸變（避免和前後區塊銜接時的短暫色差） */
+.kg-pin,.kg-ln{transition:none!important}
+.kg-ln{will-change:transform;transform-origin:50% 100%}
+/* 輪播：名稱縮小並加上煙霧浮現；成蟲與卵／蛹／幼蟲輕輕漂動 */
+.kgs-t{position:relative;font-size:clamp(40px,4.6vw,78px)}
+.kgs-t .sc{display:inline-block;opacity:0}
+.kgs-sc.on .kgs-t .sc{opacity:1;animation:gScIn .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.15s + var(--i) * .05s)}   /* 加快 */
+.kgs-t .sw{position:absolute;left:var(--x);top:50%;width:1.6em;height:1.2em;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(230,224,210,.35),rgba(230,224,210,0));filter:blur(8px);opacity:0;transform:translate(-50%,-50%) scale(.4)}
+.kgs-sc.on .kgs-t .sw{animation:smokeOut .7s ease-out both;animation-delay:calc(.15s + var(--i) * .05s)}
+.kgs-sc.on .kgs-t{opacity:1;transform:none}
+.kgs-adult{animation:kgsFloat 4.2s ease-in-out infinite alternate}
+.kgs-sat img{animation:kgsBob 3.2s ease-in-out infinite alternate}
+.kgs-s1 img{animation-delay:-1.1s}.kgs-s2 img{animation-delay:-2s}
+@keyframes kgsFloat{from{transform:translateY(-10px) rotate(-1.5deg)}to{transform:translateY(10px) rotate(1.5deg)}}
+@keyframes kgsBob{from{translate:0 -6px;rotate:-3deg}to{translate:0 6px;rotate:3deg}}
+@media (prefers-reduced-motion:reduce){.kgs-adult,.kgs-sat img{animation:none}.kgs-t .sc{opacity:1}}
+
+/* 輪播的蝴蝶名稱：拿掉煙霧效果，直接隨畫面淡入 */
+.kgs-t .sc,.kgs-sc.on .kgs-t .sc{opacity:1;animation:none}
+.kgs-t .sw{display:none}
+
+/* 生活史最後一張圖卡（成蟲）：底部背後加陰影，和下面的米色區塊分出層次 */
+.kc-card:last-child .kc-in,.kc-card.stuck:last-child .kc-in{box-shadow:0 26px 40px -14px rgba(10,61,43,.38),0 8px 12px -6px rgba(10,61,43,.2)}
+.kc-card:last-child{z-index:1}
+
+/* 型態分類圖卡：科名在左上（放大），說明＋種數在右下；傾斜圖示帶改到左下 */
+.kf-dc h4{margin-top:clamp(10px,2vh,20px);font-size:clamp(56px,6vw,104px);line-height:1.1}
+.kf-dc-body{position:absolute;right:clamp(24px,4vw,64px);bottom:clamp(28px,6vh,64px);z-index:1;width:min(520px,40vw)}
+.kf-dc ul{max-width:none}
+.kf-dc li{margin-left:calc(var(--o) * 1.4em)}
+.kf-dc-cnt{margin-top:clamp(14px,2.5vh,24px);text-align:right}
+.kf-band{right:auto;left:-12%;bottom:6%;width:70%;transform-origin:0 100%}
+@media (max-width:860px){.kf-dc-body{left:clamp(16px,4vw,24px);right:clamp(16px,4vw,24px);width:auto;bottom:clamp(20px,4vh,40px)}.kf-dc h4{font-size:clamp(40px,11vw,64px)}.kf-band{display:none}}
+
+/* 型態分類圖卡：高度一路延伸到畫面底部（不再露出底下的深色）；圖示帶改成斜跨卡片的大跑馬燈 */
+.kf-dc{height:calc(100vh - 76px - var(--k) * 54px)}
+.kf-dc-in{border-radius:40px 40px 0 0}
+.kf-dc:last-child .kf-dc-in{border-radius:40px 40px 0 0}
+.kf-band{left:49%;top:45%;right:auto;bottom:auto;width:170%;height:clamp(150px,27vh,280px);transform:translate(-50%,-50%) rotate(-35deg);transform-origin:50% 50%;
+  background:rgba(15,118,82,.08);border-top:1.5px solid rgba(15,118,82,.22);border-bottom:1.5px solid rgba(15,118,82,.22)}
+.kf-band-in{gap:clamp(36px,4vw,70px);padding:0 30px;animation:kfMarq 26s linear infinite}
+.kf-dc:nth-child(even) .kf-band-in{animation-direction:reverse}
+.kf-band-in img{width:clamp(70px,7vw,120px)}
+@keyframes kfMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.kf-dc h4,.kf-dc-no,.kf-dc-body{position:relative;z-index:2}
+.kf-dc-body{position:absolute}
+@media (prefers-reduced-motion:reduce){.kf-band-in{animation:none}}
+@media (max-width:860px){.kf-band{display:block;height:110px;top:42%}.kf-band-in img{width:60px}}
+
+/* 首頁／開場的游標圓點：只留一顆延遲跟隨的實心圓點（不要殘影）；開場時也顯示在最上層 */
+.cdot b{display:none}
+.cdot i{left:-9px;top:-9px;width:18px;height:18px}
+
+/* 輪播進度線：跳到節點時稍等一下再滑過去（延遲感），節點也跟著線到了才亮 */
+.kgs-fill{transition:transform 1s cubic-bezier(.65,0,.25,1) .15s}
+.kgs-dot{transition:background .3s ease .7s,border-color .3s ease .7s,transform .45s cubic-bezier(.3,1.6,.5,1) .7s}
+.kgs-dot span{transition:color .3s ease .7s}
+
+/* 型態分類：最後一張圖卡下方兩角也做圓角；前景的大葉子不要蓋在圖卡上 */
+.kf-dc:last-child .kf-dc-in{border-radius:40px}
+#k-family .px-front{display:none}
+.kf-dc-in{will-change:transform}
+
+/* 生活史最後一張圖卡：頂部也有往上投的陰影（疊上來時看得出層次），底部陰影保留 */
+.kc-card:last-child .kc-in,.kc-card.stuck:last-child .kc-in{box-shadow:0 -18px 36px -12px rgba(10,61,43,.35),0 -2px 6px rgba(10,61,43,.18),0 26px 40px -14px rgba(10,61,43,.38)}
+/* 型態分類圖卡：圖示改成左下區塊裡的水平跑馬燈，沒有底色與線框 */
+.kf-band{left:0;top:auto;bottom:clamp(30px,6vh,60px);width:52%;height:clamp(150px,34vh,330px);transform:none;background:none;border:0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.kf-band-in img{width:clamp(80px,8vw,130px)}
+@media (max-width:860px){.kf-band{width:100%;height:110px;bottom:auto;top:30%}}
