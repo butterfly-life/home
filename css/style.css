@@ -2426,6 +2426,8 @@ body.has-cursor .cursor{display:block}
   #story .story-body{width:min(1100px,90vw);max-width:none;text-align:left}
   /* 每段約 32 個字一行 → 三段都排成兩行 */
   #story .story-body p,#story .story-first{width:min(33em,56%)}
+  #story .story-body p:nth-child(2){width:min(35.5em,58%)}                     /* 第二段：兩行 */
+  #story .story-body p:nth-child(3){width:max-content;max-width:58%}           /* 第三段：一行（畫面太窄時才換行） */
   #story .story-body p:nth-child(1){margin-left:8%}
   #story .story-body p:nth-child(2){margin-left:22%}
   #story .story-body p:nth-child(3){margin-left:42%}
