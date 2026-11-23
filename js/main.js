@@ -863,19 +863,42 @@
     const p = new DOMPoint(x, y).matrixTransform(m);
     return [p.x - h.left, p.y - h.top];
   };
+  // 依畫面大小縮放蝴蝶與飛行距離：桌機 1，手機約 0.42（蝴蝶與 LOGO 的比例維持一致）
+  const viewScale = () => Math.max(.42, Math.min(1, Math.min(innerWidth, innerHeight * 1.5) / 1440));
+  /* 各物種的飛行特性（依實際觀察的數量級）：
+     hz＝振翅頻率（每秒完整拍動次數）；amp＝上揚角度；glide＝每次拍完後進入滑翔的機率；gl＝滑翔秒數範圍；err＝飛行路線的不規則程度
+     大白斑蝶：翅大體輕，慢拍、常常長時間滑翔（像紙片飄浮）；斑蝶類次之；枯葉蝶：拍得快、急轉彎；鳳蝶：拍幾下滑一段 */
+  /* 振翅頻率依據：《大自然的飛行家—蝴蝶飛行之初步探討》（第 45 屆中小學科展，國立台東女中）
+     - 實測：紋白蝶展翅 4.5–5 cm（前翅長約 24 mm），拍翅頻率 9 次／秒，飛行速率 1.01 ± 0.24 m/s（23℃）
+     - 「昆蟲的拍翅頻率會隨著體積增加而減少」；「翅形較寬之昆蟲，其翅之震幅較大，拍翅頻率較小」
+     → 以紋白蝶為基準，頻率與前翅長成反比（翅尖速度大致相同）：hz = 9 × 24 ÷ 前翅長(mm)
+       前翅長取本站各物種「翅長」範圍的中間值 */
+  const PIERIS_HZ = 9, PIERIS_WING = 24;
+  const hzOf = wingMM => +(PIERIS_HZ * PIERIS_WING / wingMM).toFixed(2);
+  const FLY_PHYS = {
+    idea:     { hz: hzOf(64.5), amp: 76, glide: .55, gl: [.6, 1.6], err: .35 },   // 翅長 58–71 → 約 3.3 次／秒（翅最寬，振幅最大）
+    euploea:  { hz: hzOf(38.5), amp: 70, glide: .3,  gl: [.3, .8],  err: .6 },    // 36–41 → 約 5.6 次／秒
+    tirumala: { hz: hzOf(43),   amp: 72, glide: .45, gl: [.4, 1.1], err: .45 },   // 35–51 → 約 5.0 次／秒
+    kallima:  { hz: hzOf(48),   amp: 70, glide: .12, gl: [.2, .5],  err: 1 },     // 44–52 → 約 4.5 次／秒
+    demoleus: { hz: hzOf(44),   amp: 70, glide: .3,  gl: [.3, .8],  err: .7 },    // 42–46 → 約 4.9 次／秒
+    polytes:  { hz: hzOf(46.5), amp: 72, glide: .32, gl: [.3, .9],  err: .6 }     // 39–54 → 約 4.6 次／秒
+  };
   const spawnFly = from => {
     const k = FLY_KINDS[flies.length % FLY_KINDS.length];   // 六種輪流出現
     const el = document.createElement('div');
     el.className = 'fly flap';
-    el.style.setProperty('--flap', between(.14, .22).toFixed(2) + 's');
     el.innerHTML = `<div class="fsh">${flyHTML(k)}</div><div class="fbd">${flyHTML(k)}</div>`;
     fliesBox.appendChild(el);
-    const [x, y] = from;
-    const f = { el, sh: el.firstChild, bd: el.lastChild, x, y, vx: between(-30, 30), vy: between(-90, -40), rot: 0, ang: between(0, 6.28),
-      orbit: between(80, 260), spd: between(.45, 1.65), size: between(.8, 1.3), phase: between(0, 6.28), tx: x, ty: y, next: 0,
+    const [x, y] = from, vs = viewScale(), sp = FLY_PHYS[k];
+    const f = { el, sh: el.firstChild, bd: el.lastChild, x, y, rot: 0, ang: between(0, 6.28),
+      orbit: between(80, 260) * vs, spd: between(.6, 1.4), size: between(.8, 1.3) * vs, vs, tx: x, ty: y, next: 0,
       // 跟隨游標時每隻各有不同：繞的圈大小、方向、圓扁、偏離游標的位置，以及反應快慢
-      dir: hRand() < .5 ? 1 : -1, flat: between(.45, .9), ox: between(-140, 140), oy: between(-100, 100), react: between(.9, 3.8),
+      dir: hRand() < .5 ? 1 : -1, flat: between(.45, .9), ox: between(-140, 140) * vs, oy: between(-100, 100) * vs, react: between(.9, 3.8),
+      // 飛行力學狀態：hd＝航向（弧度）、v＝空速、wp＝振翅相位（每 1 為一次完整拍動）、wa＝目前翅膀角度
+      fl: sp, hz: sp.hz * between(.95, 1.05), hd: -Math.PI / 2 + between(-.6, .6), v: 60 * vs, wp: between(0, 1), wa: sp.amp,
+      glideT: 0, jit: 0, pvx: 0, pvy: 0, bob: 0,
       state: 'fly', alt: 1, shAlt: -1, until: 0 };
+    f.rot = f.hd * 180 / Math.PI + 90;
     flies.push(f);
     el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
     f.bd.style.transform = `scale(${f.size.toFixed(2)})`;
@@ -886,11 +909,12 @@
     if (f.state === 'fly') return;
     f.state = 'fly'; f.next = now + between(300, 900);
     f.el.classList.remove('bask'); f.el.classList.add('flap');
-    f.vy = -80;
+    f.v = Math.max(f.v || 0, 40 * (f.vs || 1)); f.wp = Math.ceil(f.wp || 0); f.glideT = 0;   // 起飛：從翅膀上揚的位置開始第一下下拍
   };
-  // 影子：俯視、光從左上方來，飛得越高影子離得越遠、越淡、越糊
+  // 影子：俯視、光從左上方來，飛得越高影子離得越遠、越淡、越糊（每次振翅的上下起伏也會反映在影子距離上）
   const placeShadow = f => {
-    const ox = 4 + f.alt * 22, oy = 6 + f.alt * 30;
+    const h = f.alt * (1 + (f.bob || 0) * .12), s = f.vs || 1;
+    const ox = (4 + h * 22) * s, oy = (6 + h * 30) * s;
     f.sh.style.transform = `translate(${ox.toFixed(1)}px, ${oy.toFixed(1)}px) rotate(${f.rot.toFixed(1)}deg) scale(${(f.size * (1 - f.alt * .1)).toFixed(2)})`;
     if (Math.abs(f.alt - f.shAlt) > .05) {
       f.shAlt = f.alt;
@@ -914,7 +938,9 @@
         maxV = 300;
       } else if (f.state === 'land') {                // 停著：不振翅，偶爾慢慢開合
         if (now > f.until) takeOff(f, now);
-        f.alt = Math.max(0, f.alt - dt * 3);
+        f.alt = Math.max(0, f.alt - dt * 3); f.bob *= .9;
+        f.wa += (0 - f.wa) * Math.min(1, dt * 8);     // 落定後翅膀慢慢攤平
+        f.el.style.setProperty('--wa', f.wa.toFixed(1));
         placeShadow(f);
         return;
       } else if (f.state === 'toLand') {
@@ -934,37 +960,80 @@
         }
         tx = f.tx; ty = f.ty; maxV = 130;
       }
+      maxV *= f.vs;
       const dx = tx - f.x, dy = ty - f.y, dist = Math.hypot(dx, dy) || 1;
       if (f.state === 'toLand') {
-        f.alt = clamp01(dist / 140);
+        f.alt = clamp01(dist / (140 * f.vs));
         if (dist < 5) {
           f.state = 'land'; f.until = now + between(3500, 9000);
           f.x = tx; f.y = ty;
           f.el.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px)`;
           f.el.classList.remove('flap');
           setTimeout(() => { if (f.state === 'land') f.el.classList.add('bask'); }, 700);
-          f.vx = f.vy = 0;
+          f.v = 0; f.pvx = f.pvy = 0;
           return;
         }
       } else f.alt = Math.min(1, f.alt + dt * 1.5);
-      const sp = Math.min(maxV * f.spd, dist * (arrive ? 1.6 : 2.4));
-      const k = Math.min(1, dt * (chasing ? f.react : 1.8));   // 跟隨游標時，有的很快跟上、有的慢吞吞
-      f.vx += (dx / dist * sp - f.vx) * k;
-      f.vy += (dy / dist * sp - f.vy) * k;
-      if (chasing) flies.forEach(g => {               // 彼此靠太近就互相推開，散開一點
+      /* ── 飛行力學（俯視）──
+         1. 推力是「一下一下」的：只有下拍（翅膀往下壓）時產生推力，上拍時只有空氣阻力 → 速度隨每次振翅忽快忽慢
+            dv/dt = T·p(相位) − c·v；p 只在下拍為正，平均值 = D·2/π，T 依想要的速度反推
+         2. 轉向靠側傾，有最大轉向角速度；速度越快越難急轉 → 轉彎畫出弧線，不會原地折返
+         3. 蝴蝶特有的不規則航線（躲避天敵）：每次下拍給航向一個隨機的小偏轉，物種不同幅度不同
+         4. 振翅頻率隨用力程度改變：要加速、追游標時拍得快；速度夠了拍得慢，翅大的種類會停拍滑翔（翅膀攤平）
+         5. 下拍時身體被抬高、上拍時下沉 → 影子距離與大小跟著每次振翅起伏 */
+      const D = .44, PAVG = D * 2 / Math.PI, DRAG = 2.4;
+      const want = Math.min(maxV * f.spd, dist * (arrive ? 1.4 : 2.2));
+      const fl = f.fl;
+      // 航向
+      const desired = Math.atan2(dy, dx);
+      let dh = desired - f.hd; dh = Math.atan2(Math.sin(dh), Math.cos(dh));
+      const near = arrive && dist < 40 * f.vs;
+      const maxTurn = near ? 9 : (chasing ? 2.4 + f.react * .9 : 2.6) * (1.4 - Math.min(.7, f.v / (260 * f.vs)));
+      f.hd += Math.max(-maxTurn, Math.min(maxTurn, dh * 3.2)) * dt + f.jit * dt * f.alt;
+      f.jit *= Math.pow(.02, dt);                     // 偏轉很快消退
+      // 振翅 or 滑翔
+      const effort = clamp01((want - f.v) / (want + 30 * f.vs) + .45);
+      let pulse = 0;
+      if (f.glideT > 0) {                             // 滑翔：翅膀攤平略上揚（約 8°），沒有推力，速度慢慢降
+        f.glideT -= dt;
+        f.wa += (8 - f.wa) * Math.min(1, dt * 10);
+        if (f.v < want * .55 || chasing && effort > .7) f.glideT = 0;   // 太慢或要追游標就恢復振翅
+      } else {
+        const prev = f.wp;
+        f.wp += dt * f.hz * (.9 + .2 * effort) * (arrive && dist < 60 * f.vs ? .92 : 1);   // 依文獻頻率，只隨用力程度微調 ±10%
+        const u = f.wp % 1, e = x => (1 - Math.cos(Math.PI * x)) / 2;
+        // 翅膀角度：下拍（較快、出力）從上揚 amp° 壓到 −14°；上拍（較慢）抬回去
+        f.wa = u < D ? fl.amp - (fl.amp + 14) * e(u / D) : -14 + (fl.amp + 14) * e((u - D) / (1 - D));
+        pulse = u < D ? Math.sin(Math.PI * u / D) : 0;
+        f.bob = u < D ? e(u / D) : 1 - e((u - D) / (1 - D));
+        if (Math.floor(f.wp) !== Math.floor(prev)) {  // 每拍完一次
+          f.jit = (hRand() * 2 - 1) * fl.err * 3.2;   // 不規則航線
+          if (!chasing && !arrive && f.v > want * .6 && hRand() < fl.glide * .6)
+            f.glideT = between(fl.gl[0], fl.gl[1]);   // 進入滑翔（在翅膀上揚的位置開始）
+        }
+      }
+      if (f.glideT > 0) f.bob += (-.3 - f.bob) * Math.min(1, dt * 2);   // 滑翔時慢慢下沉
+      const T = DRAG * want / PAVG;
+      f.v += (T * pulse - DRAG * f.v) * dt;
+      f.v = Math.max(0, f.v);
+      // 彼此靠太近就互相推開（短暫的側向閃避）
+      if (chasing) flies.forEach(g => {
         if (g === f || g.state !== 'fly') return;
-        const ex = f.x - g.x, ey = f.y - g.y, ed = Math.hypot(ex, ey);
-        if (ed > 0 && ed < 110) { const push = (110 - ed) * 6 * dt; f.vx += ex / ed * push; f.vy += ey / ed * push; }
+        const ex = f.x - g.x, ey = f.y - g.y, ed = Math.hypot(ex, ey), R = 110 * f.vs;
+        if (ed > 0 && ed < R) { const push = (R - ed) * 6 * dt; f.pvx += ex / ed * push; f.pvy += ey / ed * push; }
       });
-      f.phase += dt * (7 + f.spd * 5);
-      const wob = f.alt;                              // 快降落時晃動變小
-      f.x += (f.vx + Math.cos(f.phase * .7) * 22 * wob) * dt;
-      f.y += (f.vy + Math.sin(f.phase) * 46 * wob) * dt;
-      const head = Math.atan2(f.vy, f.vx) * 180 / Math.PI + 90;
+      const pd = Math.pow(.08, dt); f.pvx *= pd; f.pvy *= pd;
+      f.x += (Math.cos(f.hd) * f.v + f.pvx) * dt;
+      f.y += (Math.sin(f.hd) * f.v + f.pvy) * dt;
+      if (near) { const kk = Math.min(1, dt * 2.5); f.x += dx * kk; f.y += dy * kk; }   // 降落前的最後修正：減速對準花朵
+      // 身體朝向＝航向（加一點點延遲，看起來像側傾轉彎）
+      const head = f.hd * 180 / Math.PI + 90;
       const diff = ((head - f.rot + 540) % 360) - 180;
-      f.rot += diff * Math.min(1, dt * 5);
+      f.rot += diff * Math.min(1, dt * 12);
+      const sc = f.size * (1 + f.bob * .035 * f.alt);   // 下拍被抬高 → 離鏡頭近一點點
       f.el.style.transform = `translate(${f.x.toFixed(1)}px, ${f.y.toFixed(1)}px)`;
-      f.bd.style.transform = `rotate(${f.rot.toFixed(1)}deg) scale(${f.size.toFixed(2)})`;
+      f.el.style.setProperty('--wa', f.wa.toFixed(1));
+      f.bd.style.transform = `rotate(${f.rot.toFixed(1)}deg) scale(${sc.toFixed(3)})`;
       placeShadow(f);
     });
     flyRaf = heroInView ? requestAnimationFrame(flyStep) : 0;
@@ -1358,7 +1427,7 @@
           else if (m.y > H + 12) m.y = -12;
           if (m.x < -12) m.x = W + 12; else if (m.x > W + 12) m.x = -12;
         }
-        const al = m.a * (.6 + .4 * Math.sin(t * m.tw + m.ph)), c = m.warm ? '255,238,206' : '255,255,255';
+        const al = m.a * (.6 + .4 * Math.sin(t * m.tw + m.ph)), c = m.warm ? '176,124,58' : '94,128,84';   // 淺色頁尾：光點改成金褐與綠色
         ctx.fillStyle = `rgba(${c},${(al * .16).toFixed(3)})`;
         ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 3.4, 0, 6.2832); ctx.fill();
         ctx.fillStyle = `rgba(${c},${al.toFixed(3)})`;
@@ -1406,7 +1475,7 @@
     foot.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') leave(); });   // 觸控：手指離開就收起光暈
   }
   // 捲到頁尾（或知識區的黑底段落，由 fx.js 標記）：導覽列換成淺色字
-  const drawFoot = () => nav.classList.toggle('on-dark', foot.getBoundingClientRect().top < 68 || document.documentElement.classList.contains('k-dark-top'));
+  const drawFoot = () => nav.classList.remove('on-dark');   // 頁尾改成淺色底：導覽列不再換成淺色字
   document.addEventListener('scrolltick', drawFoot);
   /* ---------- 鼠標：蝴蝶的一生（幼蟲 → 蛹 → 成蝶），依捲動到全頁哪裡切換 ---------- */
   if (finePointer) {
@@ -1533,10 +1602,13 @@
     bar.setAttribute('aria-hidden', 'true');
     // 手繪毛毛蟲（assets/cur-cat-bar.png）：尾巴在上、頭在下（往下爬）；往上捲時整隻翻過來
     // 圖切成一條條橫片，每片左右錯開一點，波從尾巴傳到頭，看起來就是身體在扭
-    const TH = 64, SL = 6, SH = TH / SL;
+    // 手機／窄螢幕：毛毛蟲縮小（約 0.72 倍），不擋到內容
+    const small = matchMedia('(max-width: 860px), (pointer: coarse)').matches;
+    const TW = small ? 22 : 30, TH = small ? 47 : 64, SL = 6, SH = TH / SL;
+    if (small) bar.classList.add('cbar-sm');
     const slices = Array.from({ length: SL }, (_, i) =>
-      `<i class="cbar-sl" style="top:${(i * SH).toFixed(2)}px;height:${(SH + .8).toFixed(2)}px;background-position:0 ${(-i * SH).toFixed(2)}px"></i>`).join('');
-    bar.innerHTML = `<div class="cbar-track"></div><div class="cbar-thumb"><span class="cbar-flip">${slices}</span></div>`;
+      `<i class="cbar-sl" style="top:${(i * SH).toFixed(2)}px;height:${(SH + .8).toFixed(2)}px;background-size:${TW}px ${TH}px;background-position:0 ${(-i * SH).toFixed(2)}px"></i>`).join('');
+    bar.innerHTML = `<div class="cbar-track"></div><div class="cbar-thumb" style="width:${TW}px;height:${TH}px"><span class="cbar-flip">${slices}</span></div>`;
     document.body.appendChild(bar);
     const thumb = bar.querySelector('.cbar-thumb'), slEls = [...bar.querySelectorAll('.cbar-sl')];
     const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);

@@ -55,7 +55,12 @@ body.has-cursor .cbar-thumb{cursor:none}
 /* 毛毛蟲切成橫片，JS 讓每片左右錯開 → 身體扭動 */
 .cbar-sl{position:absolute;left:0;width:100%;background:url(../assets/cur-cat-bar.png) no-repeat;background-size:30px 64px;pointer-events:none;will-change:transform}
 .cbar-thumb:hover .cbar-sl{filter:brightness(1.06)}
-@media (pointer:coarse){.cbar{display:none}}
+/* 手機也顯示毛毛蟲捲軸：縮小、貼右緣；軌道不攔截觸控（不影響滑動頁面），只有毛毛蟲本身可以拖曳 */
+.cbar.cbar-sm{top:calc(64px + env(safe-area-inset-top,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));right:1px;width:22px;pointer-events:none}
+.cbar.cbar-sm .cbar-thumb{pointer-events:auto}
+.cbar.cbar-sm .cbar-lf::before{width:7px;height:4px;left:calc(var(--sx) * 1px - 3.5px);top:-2px}
+.cbar.cbar-sm .cbar-lf::after{transform:scale(.3) rotate(var(--pd))}
+.cbar.cbar-sm .cbar-lf.eaten::after{transform:scale(.75) rotate(var(--pd))}
 ::selection{background:#A6CF84;color:#000}   /* 選取文字：綠底黑字 */
 .sel-black ::selection{color:#fff}           /* 原本是黑字的地方：綠底白字（main.js 依選取處的字色加上 .sel-black） */
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
@@ -366,10 +371,18 @@ main{position:relative;z-index:2}
 .bf-img .wl{background-size:200% 100%;background-position:0 0}
 .bf-img .wr{background-size:200% 100%;background-position:100% 0}
 .bf-img .bd{left:45.5%;width:9%;background-size:1111.1% 100%;background-position:50% 0}
-.flap .wl{animation:flapL var(--flap,.22s) ease-in-out infinite alternate}
-.flap .wr{animation:flapR var(--flap,.22s) ease-in-out infinite alternate}
-@keyframes flapL{from{transform:rotateY(-8deg)}to{transform:rotateY(72deg)}}
-@keyframes flapR{from{transform:rotateY(8deg)}to{transform:rotateY(-72deg)}}
+/* 振翅：一次完整拍動（週期 = 2 × --flap）。下拍是出力的動作，佔週期約 44%、比上拍快；
+   兩端（最高、最低點）翅膀減速換向，中段最快 */
+.flap .wl{animation:flapL calc(var(--flap,.09s) * 2) linear infinite}
+.flap .wr{animation:flapR calc(var(--flap,.09s) * 2) linear infinite}
+@keyframes flapL{0%{transform:rotateY(74deg);animation-timing-function:cubic-bezier(.42,0,.58,1)}44%{transform:rotateY(-14deg);animation-timing-function:cubic-bezier(.42,0,.58,1)}100%{transform:rotateY(74deg)}}
+@keyframes flapR{0%{transform:rotateY(-74deg);animation-timing-function:cubic-bezier(.42,0,.58,1)}44%{transform:rotateY(14deg);animation-timing-function:cubic-bezier(.42,0,.58,1)}100%{transform:rotateY(-74deg)}}
+/* 首頁的蝴蝶：翅膀角度由 js 的飛行力學逐格計算（--wa，單位：度），不用固定循環的動畫 */
+.fly .bf .wl,.fly .bf .wr{animation:none;transition:none}
+.fly .bf .wl{transform:rotateY(calc(var(--wa,0) * 1deg))}
+.fly .bf .wr{transform:rotateY(calc(var(--wa,0) * -1deg))}
+.fly.bask .bf .wl{animation:baskL 5s ease-in-out infinite}
+.fly.bask .bf .wr{animation:baskR 5s ease-in-out infinite}
 /* 停下來曬太陽：偶爾慢慢開合一次 */
 .bask .wl{animation:baskL 5s ease-in-out infinite}
 .bask .wr{animation:baskR 5s ease-in-out infinite}
@@ -1783,3 +1796,168 @@ body.has-cursor .cursor{display:block}
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
 .kf-band-in img{width:clamp(80px,8vw,130px)}
 @media (max-width:860px){.kf-band{width:100%;height:110px;bottom:auto;top:30%}}
+/* ════════════════════════════════════════════════════════════════════
+   全站淺色化（2026-11-16）：所有深色背景改成淺色，原本深底淺字的地方一律改成黑字，方便閱讀
+   淺色系：--paper 米白（主底色）、--alt 淡綠（原本的深色段落，保留和前後段的區隔）
+   ════════════════════════════════════════════════════════════════════ */
+:root{--alt:#E8EDE2;--alt-2:#DCE6D2;--txt:#1A1814;--txt-soft:rgba(26,24,20,.72);--txt-mute:rgba(26,24,20,.55)}
+
+/* 導覽列：不再切換成白字 */
+.nav.on-dark{color:var(--ink)}
+.nav.on-dark .brand,.nav.on-dark .menu a,.nav.on-dark .burger,.nav.on-dark .lang{text-shadow:none}
+.nav.on-dark:not(.open) .brand img{filter:none}
+
+/* 跑馬燈（摘要底部） */
+.mq{--mq-bg:var(--alt);--mq-fg:var(--txt)}
+.mq i{color:#5E8C5A}
+
+/* ── 摘要：淺底黑字；拿掉暗角、游標暖光、光點（都是為深色底設計的） ── */
+.story,#story.story{background:radial-gradient(ellipse 80% 75% at 50% 46%,#FBFAF6 0%,#F6F4EF 58%,#EEEBE3 100%);color:var(--txt)}
+.story .kicker{color:#A8712A}
+.story-title{color:var(--txt);text-shadow:none}
+.story-body,#story .story-body{color:var(--txt)}
+.story-body .accent{color:#A8712A}
+.story-vig,.story-glow,.story-bokeh{display:none}
+.story-crawl-cv{filter:drop-shadow(0 4px 5px rgba(40,50,30,.22))}
+#story .story-first .dropcap::after{background:radial-gradient(closest-side,rgba(120,130,110,.4),rgba(120,130,110,0))}
+
+/* ── 知識：黑色標籤 → 淡綠底黑字 ── */
+.kb-meta p{background:var(--alt);color:var(--txt)}
+.q-tag{background:var(--alt);color:var(--txt)}
+.gm-go{background:#A6CF84;color:var(--txt)}
+
+/* ── 蝴蝶構造（原本黑底） ── */
+.learn>.k-dark,.learn>#k-struct{background:var(--alt);color:var(--txt)}
+#k-struct .ks-pin{--ln:rgba(0,0,0,.1)}
+.ks .ks-k,.ks .ks-no,.ks-k,.ks-no{color:#A8712A}
+.ks-mid{color:var(--txt-soft)}
+.ks .ks-wheel b,.ks .ks-pan h3{color:#2F5A2E}
+.ks .ks-we small,.ks .ks-wheel small{color:#A8712A}
+.ks .ks-pan small,.ks-pan small{color:var(--txt-soft)}
+.ks-pan p{color:var(--txt)}
+.kv-it b{color:#0F7652}
+.kv-it small{color:#A8712A}
+
+/* ── 黑白轉場的大字（原本黑底那一層） ── */
+.kt[data-to="light"] .kt-a,.kt[data-to="dark"] .kt-b{--bg:var(--alt);--fg:var(--txt);--ln:rgba(0,0,0,.08)}
+
+/* ── LIFE CYCLE 大字＋六種蝴蝶輪播（原本深色） ── */
+.learn>#k-grow,#k-grow{background:var(--alt)}
+.kg-head.dark .kg-pin{background:var(--alt)}
+.kg-head.dark .kg-ln{color:var(--txt)}
+.kgs-pin{background:var(--alt);color:var(--txt)}
+.kgs-no{color:var(--txt-mute)}
+.kgs-t{color:#2F5A2E}
+.kgs-la{color:var(--txt-mute)}
+.kgs-adult img{filter:drop-shadow(0 16px 20px rgba(40,50,30,.25))}
+.kgs-sc.reveal .kgs-adult img{filter:grayscale(1) brightness(1.05) opacity(.55) drop-shadow(0 16px 20px rgba(40,50,30,.2))}
+.kgs-sat figcaption{color:#A8712A}
+.kgs-big{color:var(--txt)}
+.kgs-txt{color:var(--txt-soft)}
+.kgs-bar{background:rgba(26,24,20,.15)}
+.kgs-fill{background:#0F7652}
+.kgs-dot{background:var(--alt);border-color:rgba(26,24,20,.35)}
+.kgs-dot span{color:var(--txt-mute)}
+.kgs-dot.past,.kgs-dot.on{background:#0F7652;border-color:#0F7652}
+.kgs-dot.on span{color:#0F7652}
+
+/* ── 型態分類（原本深色底＋米色卡片）：底改淡綠，卡片維持米白，靠陰影分層 ── */
+#k-family{background:var(--alt)}
+.kf-dc-in{color:var(--txt)}
+.kf-dc li{color:var(--txt-soft)}
+.kf-dc-cnt{color:var(--txt)}
+
+/* ── 從利用，轉為保育（綠色叢林圖）：圖上加一層半透明米白，文字改黑色 ── */
+.learn>#k-conserve::before{content:"";position:absolute;inset:0;z-index:0;background:rgba(246,244,239,.66);pointer-events:none}
+#k-conserve .kq-txt p,#k-conserve .kq-txt p:last-child{color:var(--txt);text-shadow:0 0 14px rgba(246,244,239,.9),0 0 3px rgba(246,244,239,.8)}
+
+/* ── 結語：三角形／毛毛蟲啃食後露出的底改成淡綠，黑字 ── */
+.tri-in{color:var(--txt);background:radial-gradient(ellipse 60% 55% at 50% 58%,rgba(255,255,255,.55),transparent 70%),var(--alt-2)}
+.tri-meta dt{color:#2F5A2E}
+.tri-hint{background:rgba(246,244,239,.78);border-color:rgba(26,24,20,.18);color:var(--txt)}
+.tri-hint i{color:#5E8C5A}
+
+/* ── 地圖（原本深色） ── */
+.zi{color:var(--txt);background:var(--alt)}
+.zi-bg{background:radial-gradient(ellipse 70% 60% at 60% 45%,rgba(255,255,255,.6),transparent 70%),linear-gradient(180deg,#EEF2E9,#E3E9DC)}
+.zi-top{color:var(--txt-soft)}
+.zi-t{color:var(--txt)}
+.zi-t small{color:var(--txt-mute)}
+.zi-todo{color:var(--txt-mute)}
+.zi-cur{color:var(--txt);background:#A6CF84}
+
+/* ── 頁尾（原本深色）：淺暖色底、黑字；中心光暈與游標光暈改成柔和的色彩 ── */
+.foot{background:#ECE7DC;--fc:var(--txt)}
+.foot-halo{background:radial-gradient(circle,rgba(255,255,255,.75) 0,rgba(214,190,140,.22) 30%,rgba(166,207,132,.12) 50%,transparent 68%)}
+.foot-glow{mix-blend-mode:multiply;-webkit-backdrop-filter:none;backdrop-filter:none;
+  background:radial-gradient(circle,rgba(166,207,132,.38) 0,rgba(233,197,139,.22) 32%,rgba(170,200,230,.12) 52%,transparent 70%)}
+.foot-en{opacity:.8}
+.copy p{opacity:.75}
+.top-btn:hover,.top-btn:focus-visible{background:#A6CF84;color:var(--txt);border-color:#A6CF84}
+
+/* ════════════════════════════════════════════════════════════════════
+   響應式：手機（≤ 860px）與小手機（≤ 480px）的文字、圖片比例
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width:860px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  h2{font-size:clamp(30px,8.5vw,44px)}
+  /* 首頁：LOGO 在直式手機上稍微放大，留出蝴蝶飛舞的空間 */
+  .logo{width:min(112vw,142vh);top:calc(50% + 10px)}
+  /* 摘要：內文字級、行高配合手機；邊緣模糊在小螢幕上拿掉（太花、也耗效能） */
+  #story .story-body{font-size:clamp(15px,4.1vw,17px);line-height:1.9;margin:0 calc(var(--gut) + 8px) 0 var(--gut)}
+  #story .story-body p+p{margin-top:14px}
+  .story-dof{display:none}
+  .story-mq{font-size:11px;padding:9px 0}
+  /* 知識 */
+  .smoke-t{font-size:clamp(20px,6vw,26px);letter-spacing:.3em;margin-right:-.3em}
+  .dock-space{height:34vh;padding-top:18vh}
+  .kb-meta p{font-size:14px;padding:11px 14px}
+  .kt-t{font-size:clamp(40px,14vw,72px)}
+  .kc-st b{font-size:24px}
+  .kgs-t{font-size:clamp(34px,10vw,52px)}
+  .kgs-big{font-size:clamp(48px,15vw,84px)}
+  .kgs-stage{width:92vw;height:min(46vh,380px)}
+  .kgs-sat{width:clamp(84px,24vw,120px)}
+  .kgs-sat img{max-height:96px}
+  .kgs-sat figcaption{font-size:13px}
+  .kgs-sc.reveal .kgs-s0{transform:translate(calc(-50% - 30vw),calc(-50% - 13vh)) rotate(-8deg)}
+  .kgs-sc.reveal .kgs-s1{transform:translate(calc(-50% + 30vw),calc(-50% - 2vh)) rotate(-4deg)}
+  .kgs-sc.reveal .kgs-s2{transform:translate(calc(-50% - 18vw),calc(-50% + 16vh)) rotate(6deg)}
+  .kgs-bar{left:8vw;right:8vw}
+  .kq-t{font-size:clamp(34px,10vw,52px)}
+  .tri-q{font-size:clamp(26px,7.4vw,40px)}
+  .tri-p{font-size:clamp(15px,4vw,17px)}
+  .tri-in{padding:110px var(--gut) 12vh}
+  .tri-meta{gap:14px;margin-bottom:4vh}
+  .tri-hint{font-size:13px;padding:9px 16px;white-space:nowrap;max-width:calc(100vw - 32px)}
+  .zi-t b{font-size:clamp(72px,26vw,140px)}
+  .zi-top{font-size:12px}
+  .foot-in{padding:90px var(--gut) 28px}
+  .foot-space{min-height:180px}
+  .foot-title{margin:10px 0 36px}
+  .foot-en{letter-spacing:.12em;font-size:13px}
+  .pupa-t{font-size:clamp(34px,10vw,52px)}
+  .pupa-bg{font-size:clamp(90px,34vw,200px)}
+  /* 毛毛蟲捲軸在右緣：內文右側多留一點空間 */
+  .wrap{padding-right:calc(var(--gut) + 6px)}
+}
+@media (max-width:480px){
+  :root{--gut:16px}
+  body{font-size:15px}
+  .kgs-sat{width:clamp(76px,22vw,100px)}
+  .tri-meta dd{font-size:18px}
+  .q-t{font-size:15px}
+}
+
+/* 天敵與常識：滑過時的色帶改成淺綠、文字維持黑色（原本深綠底白字） */
+.kfaq-list button::before{background:#D6E8C6}
+.kfaq-list button:hover .q-t,.kfaq-list button:focus-visible .q-t{color:var(--txt)}
+.kfaq-list button:hover .q-tag,.kfaq-list button:focus-visible .q-tag{background:#fff;color:var(--txt)}
+.kfaq-list button:hover .q-ico,.kfaq-list button:focus-visible .q-ico{filter:none}
+.kfaq-list button:hover i::before,.kfaq-list button:hover i::after,.kfaq-list button:focus-visible i::before,.kfaq-list button:focus-visible i::after{background:var(--txt)}
+/* 懸蛹說明框的按鈕：深綠底白字 → 淺綠底黑字 */
+.pupa-note-x{background:#A6CF84;color:var(--txt)}
+.pupa-note-x:hover{background:#94C26F}
+/* START 按鈕滑過、型態分類小圓點：深綠底 → 淺綠底黑字 */
+.start:hover,.start:focus-visible{background-color:#A6CF84;border-color:#A6CF84;color:var(--txt)}
+.kf-dot.on{background:#A6CF84;color:var(--txt)}

@@ -398,8 +398,8 @@
     // 顏色直接跟著捲動位置算（不用時間漸變）：開頭剛好是米色、結尾剛好是深色 → 和前後區塊銜接時沒有色差
     const m = smooth(clamp01((p - .32) / .2));
     const mix = (a, b) => `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * m)).join(',')})`;
-    kgHead.querySelector('.kg-pin').style.background = mix([246, 244, 239], [28, 26, 23]);
-    const col = mix([15, 118, 82], [246, 244, 239]);
+    kgHead.querySelector('.kg-pin').style.background = mix([246, 244, 239], [232, 237, 226]);   // 改成淺色：米色 → 淡綠（不再轉成深色）
+    const col = mix([15, 118, 82], [26, 24, 20]);               // 文字：綠 → 黑
     kgL1.style.color = col; kgL2.style.color = col;
   };
   /* 六種蝴蝶「輪播畫面」（深色底，取代六朵花）：
@@ -539,15 +539,18 @@
     c.t += dt * .018 + Math.min(.006, dy / 15000);                  // 平常慢慢爬，捲動時爬快一點
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.clearRect(0, 0, c.cv.width, c.cv.height);
-    const S = Math.max(132, Math.min(180, innerWidth * .108));     // 毛毛蟲大小（圖的邊長）
-    const SEG = 16, HEAD = .9;                                       // 頭在圖的下方 90% 處
-    for (const it of c.list) {
-      const img = it.sp;
+    // 手機／窄螢幕：畫面小，14 隻大毛毛蟲會蓋滿內文 → 只留 5 隻、縮小、稍微透明，退到文字後面當點綴
+    const nar = innerWidth <= 860;
+    const S = nar ? Math.max(52, Math.min(80, innerWidth * .17)) : Math.max(132, Math.min(180, innerWidth * .108));   // 毛毛蟲大小（圖的邊長）
+    const SEG = nar ? 10 : 16, HEAD = .9;                            // 頭在圖的下方 90% 處
+    for (let n = 0; n < c.list.length; n++) {
+      if (nar && n % 3) continue;
+      const it = c.list[n], img = it.sp;
       if (!img.complete || !img.naturalWidth) continue;
       const u = (c.t + it.off) % 1, aHead = u * P.len;
       const fade = Math.min(1, u / .05, (1 - u) / .05);             // 兩端淡入淡出縮短：很快就完全顯示
       if (fade <= 0) continue;
-      g.globalAlpha = fade;
+      g.globalAlpha = fade * (nar ? .55 : 1);
       const IW = img.naturalWidth, IH = img.naturalHeight, sh = IH / SEG;
       for (let j = 0; j < SEG; j++) {
         const yc = (j + .5) * sh, dist = (HEAD - yc / IH) * S;     // 這一節離頭多遠
@@ -582,7 +585,7 @@
     for (let i = 0; i < n; i++) {
       const el = document.createElement('div');
       el.className = 'sw flap';
-      el.style.setProperty('--flap', (.1 + Math.random() * .08).toFixed(2) + 's');
+      el.style.setProperty('--flap', (.06 + Math.random() * .04).toFixed(3) + 's');
       el.innerHTML = flyHTML(KS[i % KS.length]);
       swarmBox.appendChild(el);
       // 往上方扇形散開，終點一定在畫面外
@@ -1259,7 +1262,7 @@
     if (d === navDark) return;
     navDark = d;
     root.classList.toggle('k-dark-top', d);
-    nav.classList.toggle('on-dark', d || (foot && foot.getBoundingClientRect().top < 68));
+    nav.classList.remove('on-dark');   // 全站已無深色背景：導覽列一律維持深色字
   };
 
   /* ---------- 視差轉場：背景植物慢、大字橫移、蝴蝶快 ---------- */
