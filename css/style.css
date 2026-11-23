@@ -2402,3 +2402,8 @@ body.has-cursor .cursor{display:block}
 .nav.compact .lang{margin:clamp(20px,4vh,40px) 0 0;padding:0;font-size:13px;color:var(--ink-mute);text-shadow:none;opacity:0;transform:translateX(40px)}
 .nav.compact.open .lang{opacity:1;transform:none;transition-delay:.6s}
 @media (max-width:860px){.nav:not(.compact) .menu-wrap{display:none}}
+
+/* 2026-11-23：游標移到地圖（生態園區APP）區塊時，整塊蓋上一層淡淡的黑色（文字與「前往探索」小方塊仍在上面） */
+.zi::after{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:0;pointer-events:none;transition:opacity .4s ease}
+.zi:hover::after,.zi.hover::after,.zi:focus-visible::after{opacity:.25}
+.zi-top{z-index:2}
