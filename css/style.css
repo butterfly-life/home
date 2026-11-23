@@ -2430,3 +2430,10 @@ body.has-cursor .cursor{display:block}
   #story .story-body p:nth-child(3){margin-left:42%}
   #story .story-body p+p{margin-top:clamp(28px,5vh,56px)}
 }
+
+/* 2026-11-23：六種蝴蝶輪播的進度條節點可以點擊切換（節點改成 button，點擊範圍放大一圈） */
+.kgs-dot{padding:0;font:inherit;cursor:pointer}
+.kgs-dot::before{content:"";position:absolute;inset:-14px -14px -26px}
+.kgs-dot:hover{border-color:#0F7652}
+.kgs-dot:hover span{color:#0F7652}
+.kgs-dot:focus-visible{outline:2px solid #0F7652;outline-offset:4px}

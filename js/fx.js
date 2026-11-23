@@ -466,10 +466,17 @@
     const n = screens.length;
     box.style.height = (n * 90 + 30) + 'vh';
     box.innerHTML = `<div class="kgs-pin"><div class="kgs-track">${screens.join('')}</div>` +
-      `<div class="kgs-bar"><i class="kgs-fill"></i>${screens.map((_, i) => `<b class="kgs-dot" style="left:${(i / (n - 1) * 100).toFixed(2)}%"><span>${String(i + 1).padStart(2, '0')}</span></b>`).join('')}</div></div>`;
+      `<div class="kgs-bar"><i class="kgs-fill"></i>${screens.map((_, i) => `<button type="button" class="kgs-dot" data-i="${i}" style="left:${(i / (n - 1) * 100).toFixed(2)}%" aria-label="${rows[i].querySelector('.kg-name b').textContent}"><span>${String(i + 1).padStart(2, '0')}</span></button>`).join('')}</div></div>`;
     kg.querySelector('.wrap').appendChild(box);
     grid.hidden = true;
     const scs = [...box.querySelectorAll('.kgs-sc')], dots = [...box.querySelectorAll('.kgs-dot')];
+    // 點進度條上的節點 → 捲到那一隻蝴蝶的位置（畫面是依捲動位置切換的，捲到該段的中間）
+    box.querySelector('.kgs-bar').addEventListener('click', e => {
+      const d = e.target.closest('.kgs-dot');
+      if (!d) return;
+      const top = box.getBoundingClientRect().top + scrollY, room = Math.max(1, box.offsetHeight - innerHeight);
+      scrollTo({ top: top + (+d.dataset.i + .5) / n * room, behavior: reduce ? 'auto' : 'smooth' });
+    });
     // 游標靠近主圖 → 彈出三個階段、成蟲變灰
     scs.forEach(sc => {
       const st = sc.querySelector('.kgs-stage');
