@@ -2410,3 +2410,12 @@ body.has-cursor .cursor{display:block}
 
 /* 2026-11-23：懸蛹背景大字從「PUPA」改成目前這隻蝴蝶的名稱（js/pupa.js 依字數調字級），字重改細 */
 .pupa-bg{font-weight:300;letter-spacing:.04em}
+
+/* 2026-11-23：知識開頭的分類色塊不要被前景的模糊大葉子（.px-front）蓋住 → 看起來像半透明；把色塊疊到葉子上面 */
+#k-body .kb-meta{position:relative;z-index:3}
+
+/* 2026-11-23：四階段底部留白裡的小標「蝴蝶也有十八變??」＋小字「觸碰蝴蝶試試。」，接到下一段六種蝴蝶 */
+.st4-next{position:absolute;left:var(--gut);right:var(--gut);bottom:clamp(28px,6vh,70px);z-index:3;text-align:center;pointer-events:none}
+.st4-next h3{margin:0;font:700 clamp(22px,2.2vw,32px)/1.4 var(--title);letter-spacing:.08em;color:#2F5A2E;white-space:nowrap}
+.st4-next p{margin:10px 0 0;font-size:clamp(13px,.95vw,15px);letter-spacing:.12em;color:var(--txt-mute)}
+@media (max-width:860px){.st4-list{padding-bottom:calc(12vh + 110px)}.st4-next h3{font-size:clamp(18px,5.4vw,24px)}}
