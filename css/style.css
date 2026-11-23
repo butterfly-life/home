@@ -587,6 +587,7 @@ body.has-cursor .cursor{display:block}
 .fcol{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .foot h5{font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin-bottom:6px;opacity:.9}
 .foot-name{font-family:var(--title);font-size:18px;font-weight:700}
+.foot-name img{display:block;height:30px;width:auto;filter:brightness(0) invert(1)}   /* 頁尾的 LOGO 字：改成白色 */
 .fcol a{position:relative;padding:2px 0 6px;opacity:.72;transition:opacity .25s ease}
 .fcol a:hover{opacity:1}
 /* Connect：滑過時兩側出現方括號 */
@@ -2379,3 +2380,25 @@ body.has-cursor .cursor{display:block}
 /* 「生態園區APP」放到縮圖左半邊的空白處，不壓到縮圖裡的標記；手機版放上方 */
 .zi-todo{left:clamp(140px,17vw,300px);top:50%}
 @media (max-width:860px){.zi-todo{left:50%;top:22%;font-size:clamp(18px,5vw,24px)}.zi-bg{background-position:68% center}}
+
+/* 2026-11-23：全站拿掉「煙霧」進場（煙團、模糊、放大），統一改成「由下往上升」淡入
+   涵蓋：介紹頁蝴蝶名稱與資料、知識開頭「知蝶百識」、型態分類科別文字、摘要內文、輪播名稱 */
+#gName .sw,.smoke-t .sw,.kgs-t .sw,#story .story-first .dropcap::after{display:none!important}
+@keyframes gScIn{from{opacity:0;transform:translateY(.6em)}}
+@keyframes gBlurIn{from{opacity:0;transform:translateY(24px)}}
+@keyframes gBlurOut{to{opacity:0;transform:translateY(-12px)}}
+.smoke-t .sc{filter:none;transform:translateY(.6em)}
+.smoke-t.in .sc{transform:none}
+#story .story-body [data-tx="lines"] .ln>span,#story .story-first[data-tx="fade"],#story .story-body [data-tx="fade"]{filter:none;transform:translateY(28px)}
+#story .story-body [data-tx="lines"].in .ln>span,#story .story-first[data-tx="fade"].in,#story .story-body [data-tx="fade"].in{transform:none}
+[data-split="blur"] .ch{filter:none;transform:translateY(.4em)}
+
+/* 2026-11-23：中／EN 切換移進選單裡（原本在 MENU 左邊，收合後會壓到置中的 LOGO）
+   橫排選單：接在最後一個項目後面；收合後點開的選單面板：放在項目清單下方 */
+.nav:not(.compact) .menu-wrap{display:flex;align-items:center}
+.nav.fold:not(.compact) .lang{opacity:0}
+.lang{transition:opacity .4s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
+.nav.compact .menu-wrap{flex-direction:column;align-items:flex-start;justify-content:center}
+.nav.compact .lang{margin:clamp(20px,4vh,40px) 0 0;padding:0;font-size:13px;color:var(--ink-mute);text-shadow:none;opacity:0;transform:translateX(40px)}
+.nav.compact.open .lang{opacity:1;transform:none;transition-delay:.6s}
+@media (max-width:860px){.nav:not(.compact) .menu-wrap{display:none}}
