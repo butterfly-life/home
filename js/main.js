@@ -179,7 +179,8 @@
   const FLY_KINDS = ['idea', 'euploea', 'tirumala', 'kallima', 'demoleus', 'polytes'];
   const flyHTML = k => {
     const bg = `style="background-image:url(assets/${k}-fly.png)"`;
-    return `<div class="bf bf-img"><div class="bf-3d"><i class="wl" ${bg}></i><i class="wr" ${bg}></i><i class="bd" ${bg}></i></div></div>`;
+    // 身體（含頭、眼睛、觸角）放在 3D 空間外面、疊在最上層 → 翅膀怎麼轉都不會蓋住或折到身體
+    return `<div class="bf bf-img" data-k="${k}"><div class="bf-3d"><i class="wl" ${bg}></i><i class="wr" ${bg}></i></div><i class="bd" ${bg}></i></div>`;
   };
 
   /* ---------- 0. 開場前奏：背景 → 霧 → LOGO 入場（CSS 動畫），前奏播完且素材載完才出現 START ---------- */
@@ -194,7 +195,7 @@
   const showStart = () => {};                           // 不再出現 START 按鈕：讀條跑完就自動進入（見下方「讀條」）
   const bump = () => { loaded++; showStart(); };
   PRELOAD.forEach(src => { const im = new Image(); im.onload = im.onerror = bump; im.src = src; });
-  (document.fonts ? document.fonts.load(`900 100px "Noto Serif TC"`, '一生') : Promise.resolve()).then(bump, bump);
+  (document.fonts ? document.fonts.load(`900 100px "Noto Sans TC"`, '一生') : Promise.resolve()).then(bump, bump);
   setTimeout(() => { loaded = total; showStart(); }, 12000);   // 網路太慢時不要一直卡住
   setTimeout(() => { introPlayed = true; showStart(); }, reduce ? 0 : 4800);   // LOGO 入場播完（見 CSS .intro-logo）
 
@@ -275,7 +276,7 @@
   //  3. 擴散速度隨時間遞減（先快後慢）
   //  4. 中心的水面回彈，稍晚再發出一串較弱、較小的第二波
   const ringOut = () => {
-    const from = $('#ldLogo') || startBtn;               // 漣漪從讀條終點（左上角的 LOGO）擴散出去
+    const from = $('#ld2Ico') || $('#ldLogo') || startBtn;   // 漣漪從讀條中間的小圖示擴散出去
     const b = from.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
     const D = 2 * Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + 40;   // 蓋滿整個視窗的直徑
     const d0 = b.height, J = () => Math.random();
@@ -345,7 +346,7 @@
     document.body.classList.remove('locked');
     document.dispatchEvent(new Event('introdone'));
     const done = () => { intro.classList.add('out'); setTimeout(() => { fogStop(); intro.remove(); }, 700); };
-    if (reduce) done(); else ringOut().then(done, done);
+    done();   // 2026-11-23：不要漣漪與最後蓋滿畫面的白色圓 —— 讀條畫面直接淡出（ringOut 保留但不再使用）
   };
   startBtn.addEventListener('click', startSite);
 
@@ -479,6 +480,27 @@
       requestAnimationFrame(tick);
     }
   }
+  /* ---------- 讀條（2026-11-23）：藍綠底＋中間跳動、抽幀切換的生命週期小圖示＋loading...
+     圖示的動畫都在 CSS；這裡只算進度（同上：最短播放時間與素材載入比例取較慢者），讀完自動進入首頁 ---------- */
+  {
+    const ld2 = $('#ld2');
+    if (ld2) {
+      const t0 = performance.now(), MIN = reduce ? 600 : 3200;
+      let done = false;
+      const tick2 = now => {
+        const p = Math.min(1, (now - t0) / MIN, loaded / total);
+        ld2.setAttribute('aria-valuenow', Math.floor(p * 100));
+        if (p >= 1 && !done) {
+          done = true;
+          ld2.classList.add('done');
+          setTimeout(startSite, reduce ? 0 : 420);
+          return;
+        }
+        requestAnimationFrame(tick2);
+      };
+      requestAnimationFrame(tick2);
+    }
+  }
 
   /* ---------- 選取文字：綠底黑字；原本就是黑字的地方改成綠底白字 ---------- */
   document.addEventListener('selectionchange', () => {
@@ -537,8 +559,6 @@
   addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   /* ---------- 背景：懸浮粒子（會被游標推開）＋首頁 → 摘要的漣漪 ---------- */
   const dust = $('#dust'), dg = dust.getContext('2d');
-  const diag = () => Math.hypot(innerWidth, innerHeight);
-  const rip = { on: false, x: 0, y: 0, p: 0 };          // 首頁 → 摘要的漣漪，進度由捲動決定
   let motes = [];
   const sizeDust = () => {
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -549,29 +569,8 @@
     motes = Array.from({ length: n }, () => ({ x: r() * innerWidth, y: r() * innerHeight, s: .5 + r() * 1.8, a: .12 + r() * .32,
       vx: (r() - .5) * 6, vy: -3 - r() * 8, ph: r() * 6.28, warm: r() < .35, px: 0, py: 0 }));
   };
-  const drawRipples = now => {
-    if (!rip.on) return;
-    const s = Math.sin(rip.p * Math.PI), maxR = diag() * .75;
-    for (let k = 0; k < 6; k++) {
-      const ph = (rip.p * 1.2 + now / 6000 + k / 6) % 1, rad = ph * maxR;
-      const a = s * (1 - ph) * Math.min(1, ph * 8) * .55;
-      if (a < .01) continue;
-      dg.beginPath();
-      for (let j = 0; j <= 96; j++) {
-        const th = j / 96 * Math.PI * 2;
-        const rr = rad * (1 + .045 * Math.sin(th * 3 + now / 1100 + k) + .02 * Math.sin(th * 7 - now / 700));
-        const tw = th + rad * .0012;                      // 越外圈轉得越多 → 渦線
-        const x = rip.x + Math.cos(tw) * rr, y = rip.y + Math.sin(tw) * rr * .62;
-        j ? dg.lineTo(x, y) : dg.moveTo(x, y);
-      }
-      dg.strokeStyle = `rgba(60,52,44,${a.toFixed(3)})`;
-      dg.lineWidth = 1.2;
-      dg.stroke();
-    }
-  };
   const drawDust = now => {
     dg.clearRect(0, 0, innerWidth, innerHeight);
-    drawRipples(now);
     const R = 140;
     motes.forEach(m => {
       // 被游標推開：越近推力越大，之後慢慢減速
@@ -589,9 +588,9 @@
     });
     if (!reduce) requestAnimationFrame(drawDust);
   };
-  sizeDust();
-  addEventListener('resize', sizeDust);
-  requestAnimationFrame(drawDust);
+  // 2026-11-18：懸浮粒子取消（不再畫、不再跑迴圈）；想恢復就把下面三行的註解拿掉，並刪掉 CSS 最後的 .dust{display:none}
+  // sizeDust(); addEventListener('resize', sizeDust);
+  // requestAnimationFrame(drawDust);
 
   /* ---------- 文字動畫：進入畫面播放，離開後重置（往回捲會再播一次） ---------- */
   // 逐字錯開、淡入淡出、位移、遮罩揭露、打字機、縮放
@@ -684,17 +683,19 @@
     if (ripCur !== ripGoal) ripRaf = requestAnimationFrame(ripTick);
     else queue();                                       // 追上後再更新一次選單狀態（透明底、目前頁面）
   };
+  /* 首頁 → 摘要：底色轉場（取代原本的漣漪）
+     捲動時首頁內容往上移出，摘要上的一層綠色由透明慢慢變實 → 畫面從米色漸變成 LOGO 綠（顏色在 CSS 的 --story-green）；
+     摘要的內容在綠色上浮上來 */
+  const rippleEase = t => t * t * (3 - 2 * t);
   const ripApply = p => {
     if (p === ripP) return;
-    if (ripP <= 0 && p > 0) {                          // 開始時記下游標位置當作漣漪中心
-      const inView = mouse.x > 0 && mouse.x < innerWidth && mouse.y > 0 && mouse.y < innerHeight;
-      rip.x = inView ? mouse.x : innerWidth / 2; rip.y = inView ? mouse.y : innerHeight / 2;
-    }
     ripP = p;
-    rip.on = p > 0 && p < 1; rip.p = p;
-    story.style.clipPath = p >= 1 ? '' : `circle(${(p * diag() * 1.05).toFixed(1)}px at ${rip.x}px ${rip.y}px)`;
-    hero.style.transform = p > 0 && p < 1 ? `scale(${(1 - p * .06).toFixed(4)})` : '';
-    hero.style.filter = p > 0 && p < 1 ? `blur(${(p * 4).toFixed(2)}px)` : '';
+    const e = rippleEase(p);
+    story.style.setProperty('--sg', e.toFixed(4));                                  // 綠色的不透明度
+    story.style.setProperty('--sp', rippleEase(clamp01((p - .35) / .65)).toFixed(4));     // 摘要內容浮上來
+    // 圖塊：捲到 30% 時從下方「往上彈進」（時間動畫，輕微超出再落定）；捲回 15% 以下才收回，避免在門檻附近來回彈
+    if (p >= .3) story.classList.add('arch-in'); else if (p < .15) story.classList.remove('arch-in');
+    hero.style.setProperty('--hp', p < 1 ? e.toFixed(4) : '1');                // 首頁內容往上移出（底色不動，免得露出底下的顏色）
     const show = p < 1;
     if (show !== heroShown) {
       heroShown = show;
@@ -876,13 +877,18 @@
   const PIERIS_HZ = 9, PIERIS_WING = 24;
   const hzOf = wingMM => +(PIERIS_HZ * PIERIS_WING / wingMM).toFixed(2);
   const FLY_PHYS = {
-    idea:     { hz: hzOf(64.5), amp: 76, glide: .55, gl: [.6, 1.6], err: .35 },   // 翅長 58–71 → 約 3.3 次／秒（翅最寬，振幅最大）
-    euploea:  { hz: hzOf(38.5), amp: 70, glide: .3,  gl: [.3, .8],  err: .6 },    // 36–41 → 約 5.6 次／秒
-    tirumala: { hz: hzOf(43),   amp: 72, glide: .45, gl: [.4, 1.1], err: .45 },   // 35–51 → 約 5.0 次／秒
-    kallima:  { hz: hzOf(48),   amp: 70, glide: .12, gl: [.2, .5],  err: 1 },     // 44–52 → 約 4.5 次／秒
-    demoleus: { hz: hzOf(44),   amp: 70, glide: .3,  gl: [.3, .8],  err: .7 },    // 42–46 → 約 4.9 次／秒
-    polytes:  { hz: hzOf(46.5), amp: 72, glide: .32, gl: [.3, .9],  err: .6 }     // 39–54 → 約 4.6 次／秒
+    idea:     { hz: hzOf(64.5), amp: 76, glide: .55, gl: [.6, 1.6], err: .35, speed: .55, burst: [2, 4] },   // 翅長 58–71 → 約 3.3 次／秒（翅最寬，振幅最大）
+    euploea:  { hz: hzOf(38.5), amp: 70, glide: .3,  gl: [.3, .8],  err: .6, speed: .95, burst: [4, 7] },    // 36–41 → 約 5.6 次／秒
+    tirumala: { hz: hzOf(43),   amp: 72, glide: .45, gl: [.4, 1.1], err: .45, speed: .75, burst: [3, 5] },   // 35–51 → 約 5.0 次／秒
+    kallima:  { hz: hzOf(48),   amp: 70, glide: .12, gl: [.2, .5],  err: 1, speed: 1.4, burst: [6, 10] },     // 44–52 → 約 4.5 次／秒
+    demoleus: { hz: hzOf(44),   amp: 70, glide: .3,  gl: [.3, .8],  err: .7, speed: 1.25, burst: [5, 8] },    // 42–46 → 約 4.9 次／秒
+    polytes:  { hz: hzOf(46.5), amp: 72, glide: .32, gl: [.3, .9],  err: .6, speed: 1.1, burst: [4, 7] }     // 39–54 → 約 4.6 次／秒
   };
+  // speed：每種的巡航速度倍率（大白斑蝶最慢、像在飄；枯葉蝶最快）；burst：每串連續振翅幾下之後滑翔一下（參考影片的「連拍→滑翔」節奏）
+  const GARDEN_SPEED = .8;   // 介紹頁蝴蝶繞圈的速度倍率（越小越慢；2026-11-23 取消慢動作：拍翅頻率另外用 HERO_FLAP，接近真實）
+  const HERO_SPEED = .6;   // 首頁蝴蝶的移動速度倍率（只放慢移動；越小越慢）
+  const HERO_FLAP = .85;   // 首頁蝴蝶的振翅頻率倍率（接近真實的拍翅速度，太慢看起來會很怪）
+  const burstOf = sp => Math.round(sp.burst[0] + Math.random() * (sp.burst[1] - sp.burst[0]));
   const spawnFly = from => {
     const k = FLY_KINDS[flies.length % FLY_KINDS.length];   // 六種輪流出現
     const el = document.createElement('div');
@@ -891,12 +897,12 @@
     fliesBox.appendChild(el);
     const [x, y] = from, vs = viewScale(), sp = FLY_PHYS[k];
     const f = { el, sh: el.firstChild, bd: el.lastChild, x, y, rot: 0, ang: between(0, 6.28),
-      orbit: between(80, 260) * vs, spd: between(.6, 1.4), size: between(.8, 1.3) * vs, vs, tx: x, ty: y, next: 0,
+      orbit: between(80, 260) * vs, spd: sp.speed * HERO_SPEED * between(.9, 1.1), size: between(.8, 1.3) * vs, vs, tx: x, ty: y, next: 0,
       // 跟隨游標時每隻各有不同：繞的圈大小、方向、圓扁、偏離游標的位置，以及反應快慢
       dir: hRand() < .5 ? 1 : -1, flat: between(.45, .9), ox: between(-140, 140) * vs, oy: between(-100, 100) * vs, react: between(.9, 3.8),
       // 飛行力學狀態：hd＝航向（弧度）、v＝空速、wp＝振翅相位（每 1 為一次完整拍動）、wa＝目前翅膀角度
-      fl: sp, hz: sp.hz * between(.95, 1.05), hd: -Math.PI / 2 + between(-.6, .6), v: 60 * vs, wp: between(0, 1), wa: sp.amp,
-      glideT: 0, jit: 0, pvx: 0, pvy: 0, bob: 0,
+      fl: sp, hz: sp.hz * HERO_FLAP * between(.95, 1.05), hd: -Math.PI / 2 + between(-.6, .6), v: 60 * vs, wp: between(0, 1), wa: sp.amp,
+      glideT: 0, jit: 0, pvx: 0, pvy: 0, bob: 0, burst: burstOf(sp), ampK: 1,
       state: 'fly', alt: 1, shAlt: -1, until: 0 };
     f.rot = f.hd * 180 / Math.PI + 90;
     flies.push(f);
@@ -955,7 +961,7 @@
             const a = between(0, 6.28);
             f.tx = logoBox.x + Math.cos(a) * logoBox.rx * between(.3, 1.1);
             f.ty = logoBox.y + Math.sin(a) * logoBox.ry * between(.4, 1.3);
-            f.next = now + between(1200, 3200);
+            f.next = now + between(1200, 3200) / HERO_SPEED;   // 飛得慢 → 換目標的間隔也拉長
           }
         }
         tx = f.tx; ty = f.ty; maxV = 130;
@@ -996,20 +1002,28 @@
       let pulse = 0;
       if (f.glideT > 0) {                             // 滑翔：翅膀攤平略上揚（約 8°），沒有推力，速度慢慢降
         f.glideT -= dt;
-        f.wa += (8 - f.wa) * Math.min(1, dt * 10);
+        f.gph = (f.gph || 0) + dt * f.hz * .7;                 // 滑翔時不完全停拍：小幅度輕拍（約正常幅度的 1/4，稍慢）
+        const soft = 8 + Math.sin(f.gph * Math.PI * 2) * f.fl.amp * .13;
+        f.wa += (soft - f.wa) * Math.min(1, dt * 10);
         if (f.v < want * .55 || chasing && effort > .7) f.glideT = 0;   // 太慢或要追游標就恢復振翅
       } else {
         const prev = f.wp;
         f.wp += dt * f.hz * (.9 + .2 * effort) * (arrive && dist < 60 * f.vs ? .92 : 1);   // 依文獻頻率，只隨用力程度微調 ±10%
         const u = f.wp % 1, e = x => (1 - Math.cos(Math.PI * x)) / 2;
         // 翅膀角度：下拍（較快、出力）從上揚 amp° 壓到 −14°；上拍（較慢）抬回去
-        f.wa = u < D ? fl.amp - (fl.amp + 14) * e(u / D) : -14 + (fl.amp + 14) * e((u - D) / (1 - D));
+        const A = fl.amp * f.ampK;                    // 每一下的幅度不同（有時拍滿、有時只拍一半）
+        f.wa = u < D ? A - (A + 14) * e(u / D) : -14 + (A + 14) * e((u - D) / (1 - D));
         pulse = u < D ? Math.sin(Math.PI * u / D) : 0;
         f.bob = u < D ? e(u / D) : 1 - e((u - D) / (1 - D));
         if (Math.floor(f.wp) !== Math.floor(prev)) {  // 每拍完一次
           f.jit = (hRand() * 2 - 1) * fl.err * 3.2;   // 不規則航線
-          if (!chasing && !arrive && f.v > want * .6 && hRand() < fl.glide * .6)
-            f.glideT = between(fl.gl[0], fl.gl[1]);   // 進入滑翔（在翅膀上揚的位置開始）
+          f.ampK = between(.88, 1);                   // 幅度只小幅變化（太小會像半開半合、卡住）
+          f.burst--;
+          // 參考影片的節奏：連續拍一串（每種幾下不同）→ 翅膀撐開滑翔一下 → 再拍一串；追游標、降落時不滑翔
+          if (f.burst <= 0) {
+            f.burst = burstOf(fl);
+            if (!chasing && !arrive && f.v > want * .5) f.glideT = between(fl.gl[0], fl.gl[1]);   // 在翅膀上揚的位置開始滑翔
+          }
         }
       }
       if (f.glideT > 0) f.bob += (-.3 - f.bob) * Math.min(1, dt * 2);   // 滑翔時慢慢下沉
@@ -1111,17 +1125,17 @@
   });
   const scenes = groups.map((g, i) => PERCH[species[i].id] && { el: g.querySelector('.g-scene'), perch: g.querySelector('.g-perch'), a: PERCH[species[i].id].a });
   const DECO = ['p-oak', 'p-frond', 'p-fern', 'p-ivy', 'p-sprig', 'p-beech', 'p-poppy', 'p-blossom'];
-  const decos = DECO.flatMap((src, i) => [i + .5, i + .28].map((at, j) => {
-    const el = document.createElement('div');
-    el.className = 'g-deco';
-    el.innerHTML = `<img src="assets/${j ? DECO[(i + 3) % DECO.length] : src}.png" alt="" draggable="false">`;
-    ring.appendChild(el);
-    return { el, at, k: j ? .55 : .8 };
-  }));
-  const FAR = [['p-blossom', 6, 8, 16], ['p-fern', 70, 4, 12], ['p-poppy', 84, 30, 10], ['p-sprig', 30, 2, 10]].map(([s, x, y, w]) => {
+  // 2026-11-18：蝴蝶之間（轉盤上）的植物拿掉；DECO 留著不用，想恢復就把 decos 改回原本的產生方式
+  void DECO;
+  const decos = [];
+  // 背景植物：放在左右兩側，上下錯落（x、y：%；w：vw；r：角度）；一部分超出畫面邊緣
+  const FAR = [
+    ['p-fern', -5, 2, 15, 18], ['p-ivy', 1, 30, 10, -12], ['p-beech', -6, 52, 14, 24], ['p-sprig', 2, 77, 10, -8],      // 左
+    ['p-oak', 89, -3, 13, -20], ['p-blossom', 85, 23, 12, 10], ['p-poppy', 91, 47, 10, -16], ['p-frond', 86, 69, 14, 12]  // 右
+  ].map(([s, x, y, w, r]) => {
     const img = document.createElement('img');
     img.src = `assets/${s}.png`; img.alt = '';
-    img.style.cssText = `left:${x}%;top:${y}%;width:${w}vw`;
+    img.style.cssText = `left:${x}%;top:${y}%;width:${w}vw;rotate:${r}deg`;
     return far.appendChild(img);
   });
   const NEAR = [['p-frond', -6, 16, 1], ['p-oak', 88, 14, -1]].map(([s, x, w, dir]) => {
@@ -1271,20 +1285,31 @@
   const flyTick = now => {
     const f = flight;
     if (!f) return;
-    const u = Math.min(1, (now - f.t0) / FLIGHT);
+    const u = Math.min(1, (now - f.t0) / f.dur);
+    // 連拍一串 → 滑翔一下（同首頁的蝴蝶）：滑翔時拿掉 flap（翅膀撐開不動）、身體慢慢下沉一點
+    if (f.glideUntil) {
+      if (now >= f.glideUntil) { f.glideUntil = 0; f.beat0 = now; f.burst = burstOf(f.fl); flyer.classList.remove('flap-soft'); flyer.classList.add('flap'); }
+    } else if (u > .12 && u < .8 && (now - f.beat0) / 1000 * f.fl.hz * HERO_FLAP >= f.burst) {
+      f.glideUntil = now + between(f.fl.gl[0], f.fl.gl[1]) * 1000 * .7;
+      flyer.classList.remove('flap'); flyer.classList.add('flap-soft');   // 滑翔：改成小幅度輕拍（不完全停住）
+    }
+    f.sink += ((f.glideUntil ? 1 : 0) - f.sink) * .05;
     const p1 = perchAt(f.sc);                          // 地球可能還在微動，降落點每格重算
     const th = f.th0 + f.spin * Math.PI * 2 * ease(u);
     const ex = f.cx + f.rx * Math.cos(th), ey = f.cy + f.ry * Math.sin(th) + Math.sin(u * Math.PI * 7) * f.ry * .07;
     const wi = smooth(0, .18, u), wo = smooth(.74, 1, u);   // 起飛：從停歇點切進繞圈路線；降落：從路線滑回停歇點
-    const x = lerp(lerp(f.p0.x, ex, wi), p1.x, wo), y = lerp(lerp(f.p0.y, ey, wi), p1.y, wo);
+    const x = lerp(lerp(f.p0.x, ex, wi), p1.x, wo), y = lerp(lerp(f.p0.y, ey, wi), p1.y, wo) + f.sink * f.ry * .06 * (1 - wo);
     const dx = x - f.lx, dy = y - f.ly;
     f.lx = x; f.ly = y;
     if (Math.hypot(dx, dy) > .4) f.ang += turnTo(f.ang, Math.atan2(dx, -dy) * 180 / Math.PI) * .14;   // 頭朝飛行方向
     const a = f.ang + turnTo(f.ang, f.rest) * wo;      // 降落時轉回停著的角度
-    const s = 1 + .6 * Math.sin(Math.PI * u);          // 飛近畫面時變大
+    const s = 1 + .22 * Math.sin(Math.PI * u);         // 飛近畫面時稍微變大（原本 1.6 倍太誇張）
     const w = p1.w, h = w * 68 / 84;
     flyer.style.width = w + 'px'; flyer.style.height = h + 'px';
-    flyer.style.transform = `translate(${(x - w / 2).toFixed(1)}px, ${(y - h / 2).toFixed(1)}px) rotate(${a.toFixed(1)}deg) scale(${s.toFixed(3)})`;
+    // 每往下拍一次，身體被抬高一點（跟著拍翅節奏上下起伏）；滑翔時不起伏，起飛／降落時漸漸收掉
+    const ph = (now - f.beat0) / 1000 * f.fl.hz * HERO_FLAP;
+    const bob = f.glideUntil ? 0 : -Math.abs(Math.sin(ph * Math.PI)) * h * .05 * wi * (1 - wo);
+    flyer.style.transform = `translate(${(x - w / 2).toFixed(1)}px, ${(y - h / 2 + bob).toFixed(1)}px) rotate(${a.toFixed(1)}deg) scale(${s.toFixed(3)})`;
     if (u < 1) requestAnimationFrame(flyTick);
     else land();
   };
@@ -1292,12 +1317,19 @@
     const sc = scenes[i];
     if (!sc || reduce || flight || !inView) return;
     const W = garden.clientWidth, H = garden.clientHeight, p0 = perchAt(sc);
-    const cx = W / 2, cy = H * .47, rx = W * .41, ry = H * .36;
+    // 2026-11-23：繞圈範圍縮小、以停歇點旁邊為中心 —— 只在花叢附近繞一小圈（原本繞過大半個畫面，位移太大不真實）
+    const side = p0.x < W / 2 ? 1 : -1;
+    const cx = p0.x + side * W * .1, cy = p0.y - H * .08, rx = W * .16, ry = H * .14;
     const rest = PERCH[species[i].id].r;
     flyer.innerHTML = flyHTML(species[i].id);
     clearTimeout(timer);
-    flight = { sc, t0: performance.now(), p0, cx, cy, rx, ry, th0: Math.atan2((p0.y - cy) / ry, (p0.x - cx) / rx),
-      spin: p0.x < cx ? 1 : -1, ang: rest, rest, lx: p0.x, ly: p0.y };
+    // 每種的速度不同：繞一圈的時間依 FLY_PHYS 的 speed（大白斑蝶慢慢飄約 7 秒、枯葉蝶約 4.4 秒）；拍翅頻率用各自的 hz
+    const fl = FLY_PHYS[species[i].id], t0 = performance.now();
+    flyer.style.setProperty('--flap', (1 / (2 * fl.hz * HERO_FLAP)).toFixed(3) + 's');
+    flyer.classList.remove('flap-soft'); flyer.classList.add('flap');
+    flight = { sc, t0, p0, cx, cy, rx, ry, th0: Math.atan2((p0.y - cy) / ry, (p0.x - cx) / rx),
+      spin: p0.x < cx ? 1 : -1, ang: rest, rest, lx: p0.x, ly: p0.y,
+      dur: FLIGHT / (Math.sqrt(fl.speed) * GARDEN_SPEED), fl, beat0: t0, burst: burstOf(fl), glideUntil: 0, sink: 0 };
     sc.perch.classList.add('away');
     flyer.classList.add('on');
     flyTick(flight.t0);
@@ -1402,7 +1434,7 @@
 
   /* ---------- 10. 頁尾：深色；游標帶著一團高飽和光暈，四周飄著光點，碰到游標範圍就彈開 ---------- */
   const footLinks = $$('.fcol.dotted a');
-  makeDot($('.fcol.dotted'), footLinks, () => -2);
+  makeDot($('.fcol.dotted'), footLinks, () => -2, () => null, false);   // 頁尾：不要動態模糊（延遲效果在 CSS）
   {
     const cv = $('#footMotes'), ctx = cv.getContext('2d'), glow = $('#footGlow');
     const R = 130;                                    // 游標推開光點的範圍
@@ -1427,7 +1459,7 @@
           else if (m.y > H + 12) m.y = -12;
           if (m.x < -12) m.x = W + 12; else if (m.x > W + 12) m.x = -12;
         }
-        const al = m.a * (.6 + .4 * Math.sin(t * m.tw + m.ph)), c = m.warm ? '176,124,58' : '94,128,84';   // 淺色頁尾：光點改成金褐與綠色
+        const al = m.a * (.6 + .4 * Math.sin(t * m.tw + m.ph)), c = m.warm ? '255,220,160' : '196,232,170';   // 深色頁尾：光點用暖金與淡綠
         ctx.fillStyle = `rgba(${c},${(al * .16).toFixed(3)})`;
         ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 3.4, 0, 6.2832); ctx.fill();
         ctx.fillStyle = `rgba(${c},${al.toFixed(3)})`;
@@ -1446,7 +1478,7 @@
       W = foot.clientWidth; H = foot.clientHeight;
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = Math.round(Math.min(170, W * H / 8000));
+      const n = 0;   // 2026-11-18：頁尾的漂浮光點取消（迴圈保留，游標聚光燈還要用它移動）
       motes = Array.from({ length: n }, () => ({
         x: Math.random() * W, y: Math.random() * H, vx: 0, vy: 0,
         r: .6 + Math.random() * 1.7, a: .3 + Math.random() * .6, sp: 6 + Math.random() * 18,
@@ -1475,7 +1507,11 @@
     foot.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') leave(); });   // 觸控：手指離開就收起光暈
   }
   // 捲到頁尾（或知識區的黑底段落，由 fx.js 標記）：導覽列換成淺色字
-  const drawFoot = () => nav.classList.remove('on-dark');   // 頁尾改成淺色底：導覽列不再換成淺色字
+  // 頁尾是深色底：導覽列碰到頁尾時換成淺色字（用 on-foot，不用 on-dark —— fx.js 每次捲動都會把 on-dark 拿掉）
+  const drawFoot = () => {
+    nav.classList.remove('on-dark');
+    nav.classList.toggle('on-foot', foot.getBoundingClientRect().top < nav.offsetHeight * .5);
+  };
   document.addEventListener('scrolltick', drawFoot);
   /* ---------- 鼠標：蝴蝶的一生（幼蟲 → 蛹 → 成蝶），依捲動到全頁哪裡切換 ---------- */
   if (finePointer) {
@@ -1533,13 +1569,9 @@
       anims.push(forms[s].animate(IN[s], { duration: 900, delay: 380, easing: E, fill: 'forwards' }));
     };
     // 首頁是圓點；漣漪轉到摘要後，依捲到剩下頁面的哪裡進化：幼蟲 → 蛹 → 成蝶
+    // 2026-11-23：不再蛻變成幼蟲／蛹／成蝶 —— 全站都用首頁的圓點游標
     const morph = () => {
-      if (ripP < .5) setStage(0);
-      else {
-        const start = TZ * .5, end = document.documentElement.scrollHeight - innerHeight;
-        const p = clamp01((scrollY - start) / Math.max(1, end - start));
-        setStage(p < .3 ? 1 : p < .6 ? 2 : 3);
-      }
+      setStage(0);
       cur.classList.toggle('dotmode', stageN === 0);
     };
     document.addEventListener('scrolltick', morph);
@@ -1571,6 +1603,9 @@
         });
       }
       pt.style.translate = ringEl.style.translate = `${mx}px ${my}px`;
+      // 2026-11-23：游標在深色頁尾上 → 反白（白色圓點）
+      const fr = foot.getBoundingClientRect();
+      cur.classList.toggle('on-dark', my >= fr.top && my <= fr.bottom);
       critter.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
       if (stageN === 1 || stageN === 3) {             // 側面圖：往右走就左右翻轉，上下只微微傾斜，不會翻成肚子朝上
         const right = Math.cos(rot * Math.PI / 180) >= 0;

@@ -1,0 +1,7 @@
+# 系統產生的檔案
+.DS_Store
+Thumbs.db
+desktop.ini
+# 暫存／備份
+*.bak
+*.tmp

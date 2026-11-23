@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560">
+  <!-- 暫代用的樹（之後換成正式插畫：同檔名覆蓋，或改 index-original.html 裡 .tr-img 的 src）
+       色調取自 LOGO：深綠 #0F7652、中綠 #3F9466、淺綠 #72B47E、米黃 #E8C68C
+       落葉的出生點寫在 index-original.html 的 data-pts（百分比，相對於這張圖的寬高） -->
+  <defs>
+    <path id="lf" d="M0 -26C11 -16 12 10 0 26C-12 10 -11 -16 0 -26Z"/>
+  </defs>
+  <!-- 樹幹與枝條 -->
+  <g fill="#6E5236">
+    <path d="M178 560C184 470 186 400 182 330C176 300 150 268 118 246L126 236C156 252 180 274 192 300C194 270 192 236 186 200L200 198C206 236 208 268 206 300C222 270 250 244 286 228L292 240C258 258 230 288 218 322C214 400 218 480 226 560Z"/>
+  </g>
+  <path d="M196 560C198 480 200 420 198 340" stroke="#5A4229" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"/>
+  <!-- 樹冠：深 → 淺疊起來 -->
+  <ellipse cx="200" cy="196" rx="176" ry="150" fill="#0F7652"/>
+  <circle cx="118" cy="236" r="96" fill="#2E8459"/>
+  <circle cx="288" cy="220" r="98" fill="#2E8459"/>
+  <circle cx="200" cy="128" r="112" fill="#3F9466"/>
+  <circle cx="150" cy="150" r="70" fill="#72B47E" opacity=".9"/>
+  <circle cx="272" cy="146" r="60" fill="#72B47E" opacity=".85"/>
+  <circle cx="104" cy="270" r="52" fill="#72B47E" opacity=".75"/>
+  <circle cx="300" cy="286" r="46" fill="#3F9466"/>
+  <circle cx="210" cy="300" r="58" fill="#2E8459"/>
+  <!-- 樹冠邊緣的葉片（和落葉同一個形狀） -->
+  <g fill="#0F7652">
+    <use href="#lf" transform="translate(370 230) rotate(70)"/>
+    <use href="#lf" transform="translate(30 210) rotate(-70)"/>
+    <use href="#lf" transform="translate(330 320) rotate(130) scale(.9)"/>
+    <use href="#lf" transform="translate(76 318) rotate(-130) scale(.9)"/>
+  </g>
+  <g fill="#72B47E">
+    <use href="#lf" transform="translate(200 20) rotate(5) scale(.9)"/>
+    <use href="#lf" transform="translate(110 70) rotate(-35) scale(.85)"/>
+    <use href="#lf" transform="translate(296 70) rotate(40) scale(.85)"/>
+    <use href="#lf" transform="translate(178 344) rotate(175) scale(.85)"/>
+  </g>
+  <g fill="#E8C68C">
+    <use href="#lf" transform="translate(352 140) rotate(55) scale(.8)"/>
+    <use href="#lf" transform="translate(52 130) rotate(-50) scale(.8)"/>
+    <use href="#lf" transform="translate(262 336) rotate(150) scale(.8)"/>
+    <use href="#lf" transform="translate(170 180) rotate(-20) scale(.7)"/>
+    <use href="#lf" transform="translate(250 230) rotate(25) scale(.7)"/>
+  </g>
+</svg>

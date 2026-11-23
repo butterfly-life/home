@@ -5,8 +5,8 @@
    蝴蝶圖示：assets/bf-icons/bf01–13.png（透明底，載入後重新上色） */
 (() => {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  // 「從利用，轉為保育」（#k-conserve）不套用，維持原本的逐行浮現
-  const els = [...document.querySelectorAll('.dock-t, .kq-t, .kfaq-title')].filter(el => !el.closest('#k-conserve'));
+  // 「從利用，轉為保育」（#k-conserve）、「臺灣，蝴蝶王國」（#k-kingdom）、「天敵與常識」（#k-enemy）（2026-11-23）不套用，維持原本的逐行由下往上浮現
+  const els = [...document.querySelectorAll('.dock-t, .kq-t, .kfaq-title')].filter(el => !el.closest('#k-conserve') && !el.closest('#k-kingdom') && !el.closest('#k-enemy'));
   if (!els.length) return;
   const DPR = Math.min(2, devicePixelRatio || 1);
   const cv = document.createElement('canvas');

@@ -241,7 +241,7 @@
     const RANGES = [
       { from: $('#dock') || $('#k-body'), to: kt1,
         hosts: ['.dock-space', '#k-body', '.kt[data-to="dark"] .kt-pin > .kt-a'] },
-      { from: kt2, to: $('#k-enemy'),
+      { from: kt2 || $('#k-cycle'), to: $('#k-enemy'),   // 2026-11-23：轉場拿掉了 → 從四階段開始鋪
         hosts: ['.kt[data-to="light"] .kt-band > .kt-lay', '#k-cycle .kc-pin', '#k-family .ks-pin', '#k-kingdom', '#k-conserve', '#k-enemy'] }
     ];
     bgRanges = RANGES.filter(r => r.from && r.to).map(rg => {
@@ -380,7 +380,44 @@
     return { flow, path, get len() { return len; } };
   })();
   // 開頭兩行大字：隨捲動往左右分開前進，過一半時明暗切換（米底黑字 ⇄ 黑底米字）
+  /* 「臺灣，蝴蝶王國」上緣的凸圓（2026-11-23）：隨捲動慢慢拱起 —— 剛進畫面時幾乎是平的，往上捲到畫面約 3/10 處時拱到最高
+     （--arch-t：0 平 → 1 拱起；CSS 用 scaleY 從下緣往上長），轉場比較柔和 */
+  {
+    const kk = $('#k-kingdom'), grow = $('#k-grow');
+    if (kk) {
+      const archT = () => {
+        const r = kk.getBoundingClientRect();
+        if (r.top > innerHeight + 200 || r.bottom < -200) return;
+        const t = reduce ? 1 : clamp01((innerHeight - r.top) / (innerHeight * .7));
+        const v = (t * t * (3 - 2 * t)).toFixed(3);
+        kk.style.setProperty('--arch-t', v);
+        if (grow) grow.style.setProperty('--arch-t', v);   // 凸圓實際畫在上一段（六種蝴蝶）的底部
+      };
+      document.addEventListener('scrolltick', archT);
+      addEventListener('scroll', archT, { passive: true });
+      archT();
+    }
+  }
   const kgHead = $('#kgHead'), kgL1 = $('#kgHead .kg-ln1'), kgL2 = $('#kgHead .kg-ln2');
+  /* LIFE / CYCLE 後面的色帶（2026-11-18）：每一行字的下半部壓在一條左右填滿的色塊上。
+     色帶是獨立的元素、不跟著字左右滑動或傾斜；垂直位置依那一行字算（KG_BAND：從字的幾成高度開始、佔幾成高） */
+  const KG_BAND = { top: .5, h: .58 };
+  const kgBands = kgHead && kgL1 ? [kgL1, kgL2].map(ln => {
+    const b = document.createElement('i');
+    b.className = 'kg-band'; b.setAttribute('aria-hidden', 'true');
+    kgL1.parentNode.insertBefore(b, kgL1);
+    return { b, ln };
+  }) : [];
+  const placeKgBands = () => kgBands.forEach(({ b, ln }) => {
+    b.style.top = (ln.offsetTop + ln.offsetHeight * KG_BAND.top).toFixed(1) + 'px';
+    b.style.height = (ln.offsetHeight * KG_BAND.h).toFixed(1) + 'px';
+  });
+  if (kgBands.length) {
+    placeKgBands();
+    addEventListener('resize', placeKgBands);
+    addEventListener('load', placeKgBands);
+    if (document.fonts) document.fonts.ready.then(placeKgBands);
+  }
   const drawGrowHead = () => {
     if (!kgHead) return;
     const r = kgHead.getBoundingClientRect();
@@ -425,8 +462,7 @@
         imgs.slice(0, 3).map((im, k) => `<figure class="kgs-sat kgs-s${k}">${im.outerHTML}<figcaption data-en="${STAGE[k][1]}">${STAGE[k][0]}</figcaption></figure>`).join('') +
         `</div></section>`;
     });
-    screens.push(`<section class="kgs-sc kgs-end"><h3 class="kgs-big" data-en="Families">型態分類</h3>` +
-      `<p class="kgs-txt" data-en="From wing shape and colour to body features — meet Taiwan's five butterfly families and discover what makes each one unique.">從翅膀的形狀、色彩到身體特徵，認識臺灣蝴蝶的五大科，發現牠們各具特色的模樣。</p></section>`);
+    // 2026-11-23：最後的「型態分類」畫面拿掉（型態分類段落已刪除）→ 只剩六種蝴蝶、進度條 01–06
     const n = screens.length;
     box.style.height = (n * 90 + 30) + 'vh';
     box.innerHTML = `<div class="kgs-pin"><div class="kgs-track">${screens.join('')}</div>` +
@@ -481,9 +517,10 @@
   /* ---------- 摘要：一列毛毛蟲沿著一條「勾形」路線排隊前進（參考環形文字的編排，文字換成毛毛蟲） ----------
      毛毛蟲用結尾轉場那幾隻（assets/larvae/larva1–6.png，頭朝下）；一直沿路線往前爬，走到盡頭再從起點繞回來；
      路線的頭尾兩端漸漸透明，看起來像從空氣中爬出來、又爬進去 */
+  const STORY_CRAWL = false;   // 2026-11-18：摘要不要毛毛蟲（改成 true 可恢復）
   const crawlers = (() => {
     const st = $('#story'), fxBox = st && st.querySelector('.story-fx');
-    if (!fxBox || reduce) return null;
+    if (!fxBox || reduce || !STORY_CRAWL) return null;
     const NS = 'http://www.w3.org/2000/svg';
     // 路線（依手繪紅線，區塊的千分比座標 0～1000）：從左邊往上→往右下繞一個大圈→從圈的上方往右上爬過頂端→沿右側往下→在右下勾回、往右上離開
     const PTS = [[20, 570], [100, 380], [200, 330], [310, 330], [370, 400], [380, 550], [350, 700], [270, 720], [190, 680], [170, 520],
@@ -572,7 +609,7 @@
   const KS = ['idea', 'euploea', 'tirumala', 'kallima', 'demoleus', 'polytes'];
   const flyHTML = k => {
     const bg = `style="background-image:url(assets/${k}-fly.png)"`;
-    return `<div class="bf bf-img"><div class="bf-3d"><i class="wl" ${bg}></i><i class="wr" ${bg}></i><i class="bd" ${bg}></i></div></div>`;
+    return `<div class="bf bf-img" data-k="${k}"><div class="bf-3d"><i class="wl" ${bg}></i><i class="wr" ${bg}></i></div><i class="bd" ${bg}></i></div>`;
   };
   const swarmBox = $('#swarm');
   let lastSwarm = -1e4, hold = false;
@@ -850,13 +887,15 @@
     deck.innerHTML = kfPans2.map((p, i) => {
       const h = p.querySelector('h4'), lis = [...p.querySelectorAll('.kf-ul li')], num = kfNums[i];
       const cnt = num && num.querySelector('.kf-cnt'), icons = num ? [...num.querySelectorAll('.kf-ico img')].map(im => im.getAttribute('src')) : [];
-      const strip = Array.from({ length: 3 }, () => icons.map(s => `<img src="${s}" alt="">`).join('')).join('');
+      // 2026-11-18：同四階段的版面 —— 文字在上、蝴蝶小圖示在下，兩者放在同一張卡片裡（卡片仍然 sticky 疊起來）
+      const ico = icons.map((s, k) => `<img src="${s}" alt="" style="--i:${k};--rot:${((k * 37 + i * 11) % 50) - 25}deg">`).join('');
       return `<article class="kf-dc" style="--k:${i}"><div class="kf-dc-in">` +
-        `<p class="kf-dc-no">${String(i + 1).padStart(2, '0')} — 05</p>` +
+        `<div class="kf-dc-txt"><p class="kf-dc-no">${String(i + 1).padStart(2, '0')} — 05</p>` +
         `<h4${att(h, 'data-en')}>${h.innerHTML}</h4>` +
-        `<div class="kf-dc-body"><ul>${lis.map((li, k) => li.outerHTML.replace('<li', `<li style="--o:${k}"`)).join('')}</ul>` +
-        (cnt ? `<p class="kf-dc-cnt"${att(cnt, 'data-en-html')}>${cnt.innerHTML}</p>` : '') + `</div>` +
-        `<div class="kf-band" aria-hidden="true"><div class="kf-band-in">${strip}${strip}</div></div>` +
+        `<div class="kf-dc-body"><ul>${lis.map((li, k) => li.outerHTML.replace('<li', `<li style="--o:${k}"`)).join('')}</ul></div></div>` +
+        `<div class="kf-dc-fig">` +
+        (cnt ? `<p class="kf-dc-cnt"${att(cnt, 'data-en-html')}>${cnt.innerHTML}</p>` : '') +
+        `<div class="kf-dc-icons" aria-hidden="true">${ico}</div></div>` +
         `</div></article>`;
     }).join('');
     pin.appendChild(deck);
@@ -1018,8 +1057,9 @@
      露出底下；路線事先算好（網格上每一格都會有一隻毛毛蟲經過），所以捲到最後一定全部吃乾淨。往回捲就重畫到當下的進度。
      毛毛蟲圖：assets/larvae/larva1–6.png（頭朝下） */
   const tri = $('#k-end'), triIn = $('#triIn');
+  const TRI_EAT = false;   // 2026-11-23：結語不要毛毛蟲啃食轉場（改成 true 可恢復，CSS 的 .tri 高度也要改回 280vh）
   const eat = (() => {
-    if (!tri) return null;
+    if (!tri || !TRI_EAT) return null;
     const pin = tri.querySelector('.tri-pin');
     const cover = document.createElement('canvas'), bugs = document.createElement('canvas');
     cover.className = 'tri-cover'; bugs.className = 'tri-bugs';

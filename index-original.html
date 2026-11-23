@@ -7,8 +7,8 @@
 <meta name="description" content="蝶影浮生：認識臺灣六種蝴蝶的樣貌、寄主植物與棲地。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261118a">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=20261124c">
 </head>
 <body>
 
@@ -29,13 +29,14 @@
     <img class="intro-logo" src="assets/logo.png" alt="蝶影浮生">
     <button class="start" id="start" type="button" disabled><span>START</span><i aria-hidden="true">→</i></button>
   </div>
-  <!-- 讀條：一隻蝴蝶從右上角出發，沿著不規則、會繞圈的優美曲線飛過畫面，身後拖著漸漸消失的尾跡；
-       飛到 100% 時停在左上角（首頁選單常駐 LOGO 的位置）並變成 LOGO。百分比與生命週期小圖示在畫面中央偏下。讀完自動進入首頁 -->
-  <div class="ld" id="ld" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="載入中" data-en-label="Loading">
-    <canvas class="ld-trail" id="ldTrail" aria-hidden="true"></canvas>
-    <div class="ld-fly" id="ldFly" aria-hidden="true"><img class="ld-wing" src="assets/ld-bf.png" alt=""></div>
-    <img class="ld-logo" id="ldLogo" src="assets/logo.png" alt="" aria-hidden="true">
-    <div class="ld-meter" aria-hidden="true"><span class="ld-ico" id="ldIco"></span><b class="ld-pct" id="ldPct">0%</b></div>
+  <!-- 2026-11-23 讀條（取代飛行蝴蝶）：純色藍綠底，中間一個一跳一跳、抽幀切換的生命週期小圖示（卵 → 毛毛蟲 → 蛹 → 成蝶），下方 loading...
+       讀完自動進入首頁（js/main.js「讀條」） -->
+  <div class="ld2" id="ld2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="載入中" data-en-label="Loading">
+    <div class="ld2-ico" id="ld2Ico" aria-hidden="true">
+      <div class="ld2-hop"><img src="assets/kc-egg.png" alt=""><img src="assets/kc-larva.png" alt=""><img src="assets/kc-pupa.png" alt=""><img src="assets/kc-adult.png" alt=""></div>
+      <i class="ld2-shadow"></i>
+    </div>
+    <p class="ld2-t" aria-hidden="true">loading<span>.</span><span>.</span><span>.</span></p>
   </div>
 </div>
 
@@ -79,16 +80,16 @@
 <!-- 2. 摘要 -->
 <!-- 漣漪轉場：摘要固定在畫面上，捲動時從游標處以圓形擴散出來，蓋過首頁 -->
 <div class="rip-track" id="ripTrack">
-<section id="story" class="sec story k-dark" data-sec data-bg="#F6F4EF">
+<section id="story" class="sec story k-dark" data-sec data-bg="#CFE6C6">
+  <div class="story-arch" aria-hidden="true"></div>
   <div class="story-fx" aria-hidden="true"><div class="story-bokeh"></div><i class="story-glow"></i><i class="story-vig"></i><i class="story-dof"></i></div>
   <div class="wrap story-grid">
     <div class="story-body">
       <p class="story-first" data-tx="fade" data-en-html="&lt;span class=&quot;dropcap&quot;&gt;A&lt;/span&gt; butterfly's life begins as a single egg. It first feeds on its host plant as a caterpillar, then quietly rebuilds itself inside the pupa, and finally breaks free with a pair of brief, brilliant wings."><span class="dropcap">蝴蝶</span>的一生從一粒卵開始。牠先以幼蟲的模樣啃食寄主植物，再於蛹中靜靜地重組自己，最後破蛹而出，換得一雙短暫而絢麗的翅膀。</p>
-      <p data-tx="lines" data-en="Butterfly Shadows, a Fleeting Life follows six butterflies commonly seen in Taiwan — the Paper Kite, Dwarf Crow, Blue Tiger, Orange Oakleaf, Lime Swallowtail and Common Mormon — gathering their appearance, host plants and the altitudes where they live.">「蝶影浮生」以臺灣常見的六種蝴蝶為主角：大白斑蝶、小紫斑蝶、淡紋青斑蝶、枯葉蝶、花鳳蝶與玉帶鳳蝶，整理牠們的樣貌、寄主植物與棲息的海拔。</p>
-      <p data-tx="lines" data-en="As you browse, your cursor transforms too: from caterpillar, to pupa, to a butterfly in flight.">瀏覽這個網站時，游標也會跟著蛻變：從幼蟲、蛹，到展翅的蝴蝶。</p>
+      <p data-tx="fade" data-en="Butterfly Shadows, a Fleeting Life follows six butterflies commonly seen in Taiwan — the Paper Kite, Dwarf Crow, Blue Tiger, Orange Oakleaf, Lime Swallowtail and Common Mormon — gathering their appearance, host plants and the altitudes where they live.">「蝶影浮生」以臺灣常見的六種蝴蝶為主角：大白斑蝶、小紫斑蝶、淡紋青斑蝶、枯葉蝶、花鳳蝶與玉帶鳳蝶，整理牠們的樣貌、寄主植物與棲息的海拔。</p>
+      <p data-tx="fade" data-en="As you browse, your cursor transforms too: from caterpillar, to pupa, to a butterfly in flight.">瀏覽這個網站時，游標也會跟著蛻變：從幼蟲、蛹，到展翅的蝴蝶。</p>
     </div>
   </div>
-  <div class="mq story-mq" data-mq="-34" aria-hidden="true"><div class="mq-in"><span class="mq-set mq-plain">ABSTRACT<i></i>BUTTERFLY SHADOWS, A FLEETING LIFE<i></i></span></div></div>
 </section>
 </div>
 
@@ -150,83 +151,40 @@
     </div>
   </div>
 
-  <!-- 轉場：橫向條帶遮罩揭露＋黑白主題切換＋大字排版動畫 -->
-  <div class="kt" data-to="dark" aria-hidden="true">
-    <div class="kt-pin">
-      <div class="kt-lay kt-a"><p class="kt-t"><span class="kt-l"><span>Small</span></span><span class="kt-l"><span>Wings,</span></span><span class="kt-l"><span>Wide World</span></span></p></div>
-      <div class="kt-lay kt-b"><p class="kt-t"><span class="kt-l"><span>Every</span></span><span class="kt-l"><span>Part</span></span><span class="kt-l"><span>Has a Purpose</span></span></p></div>
+  <!-- 生活史（四階段）：拿掉圖卡，每個階段「文字在上、圖在下」；
+       背景兩側各一棵靜止的樹（.st4-scene 跟著這一段黏在畫面上），落葉由 js/leaves.js 從樹冠邊緣的固定點放出來。
+       換樹：改 .tr-img 的 src；落葉出生點：data-pts（x,y 百分比，相對樹的圖，以「左邊那棵」為準，右邊那棵自動鏡像） -->
+  <div class="kc st4" id="k-cycle" data-bg="#F6F4EF">
+    <div class="st4-scene" id="st4Scene" aria-hidden="true">
+      <div class="tr tr-l" data-pts="88,40;78,57;45,60"><img class="tr-img" src="assets/trees/tree.svg" alt=""><div class="tr-leaves"></div></div>
+      <div class="tr tr-r" data-pts="88,40;78,57;45,60"><img class="tr-img" src="assets/trees/tree.svg" alt=""><div class="tr-leaves"></div></div>
     </div>
-  </div>
-  <!-- 構造（黑底）：網格排版，每塊文字各佔一格不重疊；左上大字「蝴蝶的」、右上輪盤文字轉到正在介紹的部位；左下說明、右下圖片與編號 -->
-  <div class="ks k-dark" id="k-struct" data-bg="#F6F4EF">
-    <div class="ks-pin">
-      <p class="ks-k" data-en="STRUCTURE — Butterfly Anatomy">STRUCTURE — 蝴蝶構造</p>
-      <p class="ks-we" aria-hidden="true"><small lang="en">THE BUTTERFLY&rsquo;S</small><b>蝴蝶的</b></p>
-      <div class="ks-wheel" aria-hidden="true"><div class="ks-wheel-in" id="ksWheel"><span><small lang="en">HEAD</small><b>頭部</b></span><span><small lang="en">THORAX</small><b>胸部</b></span><span><small lang="en">ABDOMEN</small><b>腹部</b></span></div></div>
-      <div class="ks-vert" aria-hidden="true"><div class="kv-in"><p class="kv-it on"><b>頭部</b><small lang="en">HEAD</small></p><p class="kv-it"><b>胸部</b><small lang="en">THORAX</small></p><p class="kv-it"><b>腹部</b><small lang="en">ABDOMEN</small></p></div></div>
-      <div class="ks-info" id="ksInfo">
-          <div class="ks-pan on"><p class="ks-no">01 — HEAD</p><h3 data-en="Head">頭部</h3>
-            <p data-en="A pair of antennae serve as organs of smell; each of the two compound eyes is made of 6,000–10,000 ommatidia; and a proboscis is used to sip nectar and water.">一對觸角，是嗅覺器官；一對複眼，每個複眼由六千至一萬個單眼構成；還有一個用來吸食花蜜、水的吻器。</p>
-            <small data-en="Larva: simple eyes on both sides of the head sense light, and chewing mouthparts break down food.">幼蟲：頭部兩側有感應光線的單眼，口器能咬碎食物。</small></div>
-          <div class="ks-pan"><p class="ks-no">02 — THORAX</p><h3 data-en="Thorax">胸部</h3>
-            <p data-en="Bears three pairs of legs and two pairs of wings — the adult's organs of movement. Danaids and other brush-footed butterflies seem to have only four legs, but in fact have six; two are reduced.">擁有三對足和兩對翅，是成蟲活動的運動器官。斑蝶、蛺蝶等乍看只有四隻腳，其實是六隻，其中兩隻退化了。</p>
-            <small data-en="Larva: three pairs of thoracic legs with claws at the tips, used for gripping and feeding.">幼蟲：三對胸足，末端有爪，用來攀附、取食。</small></div>
-          <div class="ks-pan"><p class="ks-no">03 — ABDOMEN</p><h3 data-en="Abdomen">腹部</h3>
-            <p data-en="Digests food and absorbs nutrients; the tip holds the reproductive and excretory organs. Spiracles along both sides feed a tracheal system for breathing — the same in larvae and adults.">負責消化、吸收食物的營養，末端具有生殖和排泄器官。身體兩側分布著氣孔，以氣管系統呼吸，幼蟲與成蟲都一樣。</p>
-            <small data-en="Larva: four pairs of prolegs and one pair of anal prolegs.">幼蟲：四對腹足及一對尾足。</small></div>
-      </div>
-      <div class="ks-side">
-        <figure class="ks-img" id="ksImg"><img src="assets/idea-fly.png" alt="大白斑蝶" loading="lazy"></figure>
-      </div>
-    </div>
-  </div>
-  <!-- 轉場：橫向條帶遮罩揭露＋黑白主題切換＋大字排版動畫 -->
-  <div class="kt" data-to="light" aria-hidden="true">
-    <div class="kt-pin">
-      <div class="kt-lay kt-a"><p class="kt-t"><span class="kt-l"><span>Head,</span></span><span class="kt-l"><span>Thorax,</span></span><span class="kt-l"><span>Abdomen</span></span></p></div>
-      <div class="kt-lay kt-b"><p class="kt-t"><span class="kt-l"><span>One</span></span><span class="kt-l"><span>Life,</span></span><span class="kt-l"><span>Four Forms</span></span></p></div>
-    </div>
-  </div>
-  <!-- 生活史：一條線從上一個轉場畫下來，接著每個階段是一張綠色系的圖卡，隨著捲動一張一張疊上來（版面：左欄編號、中欄標題與說明、右欄圖片與名稱） -->
-  <div class="kc" id="k-cycle" data-bg="#F6F4EF">
-    <div class="kc-lead" aria-hidden="true"><i class="kc-lead-ln"></i><i class="kc-lead-dot"></i></div>
-    <div class="kc-stack">
-      <article class="kc-card" style="--i:0">
-        <div class="kc-c1"><p class="kc-st"><small lang="en">Stage</small><b>00</b></p><p class="kc-en" lang="en">METAMORPHOSIS</p></div>
-        <div class="kc-c2"><h4 class="kc-h" data-en="Complete Metamorphosis">完全變態</h4><p class="kc-p" data-en="Taiwan is home to more than 400 butterfly species, and the length of their life cycle varies with species and climate. A butterfly's life has four stages — egg, larva, pupa and adult — each completely different in form and habit. This is called complete metamorphosis.">臺灣的蝴蝶大約有 400 多種，生活史的長短會因種類及生長的氣候而不同。蝴蝶的一生分為卵、幼蟲、蛹、成蟲四個階段，四個階段的外觀、習性完全不同，稱為「完全變態」。</p></div>
-        <div class="kc-c3"><div class="kc-ph kc-ph-num"><b>4</b><span data-en="stages">個階段</span></div><p class="kc-n1" lang="en">METAMORPHOSIS</p><p class="kc-n2" data-en="Complete Metamorphosis">完全變態</p><p class="kc-n3" lang="en">LIFE CYCLE</p></div>
+    <div class="st4-list">
+      <article class="st4-it">
+        <div class="st4-txt"><p class="st4-no"><span lang="en">STAGE 00</span><span lang="en">METAMORPHOSIS</span></p><h4 class="st4-h" data-tx="fade" data-en="Complete Metamorphosis">完全變態</h4><p class="st4-p" data-tx="fade" data-en="Taiwan is home to more than 400 butterfly species, and the length of their life cycle varies with species and climate. A butterfly's life has four stages — egg, larva, pupa and adult — each completely different in form and habit. This is called complete metamorphosis.">臺灣的蝴蝶大約有 400 多種，生活史的長短會因種類及生長的氣候而不同。蝴蝶的一生分為卵、幼蟲、蛹、成蟲四個階段，四個階段的外觀、習性完全不同，稱為「完全變態」。</p></div>
+        <figure class="st4-fig st4-num" data-tx="fade"><div class="st4-pic"><b>4</b><span data-en="stages">個階段</span></div><figcaption lang="en">LIFE CYCLE</figcaption></figure>
       </article>
-      <article class="kc-card" style="--i:1">
-        <div class="kc-c1"><p class="kc-st"><small lang="en">Stage</small><b>01</b></p><p class="kc-en" lang="en">EGG</p></div>
-        <div class="kc-c2"><h4 class="kc-h" data-en="Egg">卵</h4><p class="kc-p" data-en="Females usually lay their eggs under the leaves the larvae will eat, sheltering them from predators, sun and rain. Eggs may be laid in clusters or one by one, and their shapes vary from species to species.">雌蝶通常將卵產在幼蟲會吃的葉子下面，以防止天敵及日曬雨淋。產卵的方式有群產與散產之分；卵的形狀也隨蝴蝶的種類而有不同的面貌。</p></div>
-        <div class="kc-c3"><div class="kc-ph"><img src="assets/kc-egg.png" alt=""></div><p class="kc-n1" lang="en">EGG</p><p class="kc-n2" data-en="Egg">卵</p><p class="kc-n3" lang="en">STAGE 1 / 4</p></div>
+      <article class="st4-it">
+        <div class="st4-txt"><p class="st4-no"><span lang="en">STAGE 01</span><span lang="en">EGG</span></p><h4 class="st4-h" data-tx="fade" data-en="Egg">卵</h4><p class="st4-p" data-tx="fade" data-en="Females usually lay their eggs under the leaves the larvae will eat, sheltering them from predators, sun and rain. Eggs may be laid in clusters or one by one, and their shapes vary from species to species.">雌蝶通常將卵產在幼蟲會吃的葉子下面，以防止天敵及日曬雨淋。產卵的方式有群產與散產之分；卵的形狀也隨蝴蝶的種類而有不同的面貌。</p></div>
+        <figure class="st4-fig" data-tx="fade"><div class="st4-pic"><img src="assets/kc-egg.png" alt="" loading="lazy"></div><figcaption lang="en">STAGE 1 / 4</figcaption></figure>
       </article>
-      <article class="kc-card" style="--i:2">
-        <div class="kc-c1"><p class="kc-st"><small lang="en">Stage</small><b>02</b></p><p class="kc-en" lang="en">LARVA</p></div>
-        <div class="kc-c2"><h4 class="kc-h" data-en="Larva">幼蟲</h4><p class="kc-p" data-en="A caterpillar's skin cannot grow with its body, so it moults by wriggling free as it grows. Larvae have three pairs of thoracic legs, four pairs of prolegs and a pair of anal prolegs, and their colours vary by family: swallowtails are smooth and mostly green; danaids bear bold stripes and spots; nymphalids are rough-skinned; whites and yellows are covered in fine hairs.">幼蟲的外殼無法跟著身體一起長大，所以成長過程中會藉由蠕動來「蛻皮」。幼蟲有三對胸足、四對腹足及一對尾足，顏色也因科別而千變萬化：鳳蝶科光滑無毛、多為綠色；斑蝶類有亮麗對比的條紋、斑點；蛺蝶科體表粗糙；粉蝶科長有細細的絨毛。</p></div>
-        <div class="kc-c3"><div class="kc-ph"><img src="assets/kc-larva.png" alt=""></div><p class="kc-n1" lang="en">LARVA</p><p class="kc-n2" data-en="Larva">幼蟲</p><p class="kc-n3" lang="en">STAGE 2 / 4</p></div>
+      <article class="st4-it">
+        <div class="st4-txt"><p class="st4-no"><span lang="en">STAGE 02</span><span lang="en">LARVA</span></p><h4 class="st4-h" data-tx="fade" data-en="Larva">幼蟲</h4><p class="st4-p" data-tx="fade" data-en="A caterpillar's skin cannot grow with its body, so it moults by wriggling free as it grows. Larvae have three pairs of thoracic legs, four pairs of prolegs and a pair of anal prolegs, and their colours vary by family: swallowtails are smooth and mostly green; danaids bear bold stripes and spots; nymphalids are rough-skinned; whites and yellows are covered in fine hairs.">幼蟲的外殼無法跟著身體一起長大，所以成長過程中會藉由蠕動來「蛻皮」。幼蟲有三對胸足、四對腹足及一對尾足，顏色也因科別而千變萬化：鳳蝶科光滑無毛、多為綠色；斑蝶類有亮麗對比的條紋、斑點；蛺蝶科體表粗糙；粉蝶科長有細細的絨毛。</p></div>
+        <figure class="st4-fig" data-tx="fade"><div class="st4-pic"><img src="assets/kc-larva.png" alt="" loading="lazy"></div><figcaption lang="en">STAGE 2 / 4</figcaption></figure>
       </article>
-      <article class="kc-card" style="--i:3">
-        <div class="kc-c1"><p class="kc-st"><small lang="en">Stage</small><b>03</b></p><p class="kc-en" lang="en">PUPA</p></div>
-        <div class="kc-c2"><h4 class="kc-h" data-en="Pupa">蛹</h4><p class="kc-p" data-en="Before its final moult, the larva spins silk to anchor itself — the most fragile and dangerous time of its life. Pupae hanging upside down by the tail alone are &quot;suspended pupae&quot;, as in nymphalids and danaids; those also held by a silk girdle are &quot;girdled pupae&quot;, as in swallowtails and whites.">最後一次蛻皮前，幼蟲會吐絲把自己固定下來，這是最脆弱也最危險的時期。只有尾端固定、整個倒吊的是「吊蛹」，如蛺蝶、斑蝶；身上另有一條絲帶環繞支撐的是「帶蛹」，如鳳蝶、粉蝶。</p></div>
-        <div class="kc-c3"><div class="kc-ph"><img src="assets/kc-pupa.png" alt=""></div><p class="kc-n1" lang="en">PUPA</p><p class="kc-n2" data-en="Pupa">蛹</p><p class="kc-n3" lang="en">STAGE 3 / 4</p></div>
+      <article class="st4-it">
+        <div class="st4-txt"><p class="st4-no"><span lang="en">STAGE 03</span><span lang="en">PUPA</span></p><h4 class="st4-h" data-tx="fade" data-en="Pupa">蛹</h4><p class="st4-p" data-tx="fade" data-en="Before its final moult, the larva spins silk to anchor itself — the most fragile and dangerous time of its life. Pupae hanging upside down by the tail alone are &quot;suspended pupae&quot;, as in nymphalids and danaids; those also held by a silk girdle are &quot;girdled pupae&quot;, as in swallowtails and whites.">最後一次蛻皮前，幼蟲會吐絲把自己固定下來，這是最脆弱也最危險的時期。只有尾端固定、整個倒吊的是「吊蛹」，如蛺蝶、斑蝶；身上另有一條絲帶環繞支撐的是「帶蛹」，如鳳蝶、粉蝶。</p></div>
+        <figure class="st4-fig" data-tx="fade"><div class="st4-pic"><img src="assets/kc-pupa.png" alt="" loading="lazy"></div><figcaption lang="en">STAGE 3 / 4</figcaption></figure>
       </article>
-      <article class="kc-card" style="--i:4">
-        <div class="kc-c1"><p class="kc-st"><small lang="en">Stage</small><b>04</b></p><p class="kc-en" lang="en">ADULT</p></div>
-        <div class="kc-c2"><h4 class="kc-h" data-en="Adult">成蟲</h4><p class="kc-p" data-en="A newly emerged butterfly's wings are wet and crumpled; it pumps body fluid into the veins to spread them, a process called wing expansion. The undersides are usually camouflaged, while the upper sides are bright for courtship; as it sips nectar, it also pollinates plants.">剛羽化的蝴蝶翅膀又濕又皺，要靠身體蠕動把體液送進翅脈，才能把翅膀推開，稱為「展翅」。翅膀腹面多是保護色，背面則色彩亮麗，主要用來求偶；吸食花蜜的同時，也替植物傳播花粉。</p></div>
-        <div class="kc-c3"><div class="kc-ph"><img src="assets/kc-adult.png" alt=""></div><p class="kc-n1" lang="en">ADULT</p><p class="kc-n2" data-en="Adult">成蟲</p><p class="kc-n3" lang="en">STAGE 4 / 4</p></div>
+      <article class="st4-it">
+        <div class="st4-txt"><p class="st4-no"><span lang="en">STAGE 04</span><span lang="en">ADULT</span></p><h4 class="st4-h" data-tx="fade" data-en="Adult">成蟲</h4><p class="st4-p" data-tx="fade" data-en="A newly emerged butterfly's wings are wet and crumpled; it pumps body fluid into the veins to spread them, a process called wing expansion. The undersides are usually camouflaged, while the upper sides are bright for courtship; as it sips nectar, it also pollinates plants.">剛羽化的蝴蝶翅膀又濕又皺，要靠身體蠕動把體液送進翅脈，才能把翅膀推開，稱為「展翅」。翅膀腹面多是保護色，背面則色彩亮麗，主要用來求偶；吸食花蜜的同時，也替植物傳播花粉。</p></div>
+        <figure class="st4-fig" data-tx="fade"><div class="st4-pic"><img src="assets/kc-adult.png" alt="" loading="lazy"></div><figcaption lang="en">STAGE 4 / 4</figcaption></figure>
       </article>
     </div>
   </div>
   <!-- 六種蝴蝶的一生：每一列是一種蝴蝶，四欄依序是卵、幼蟲、蛹、成蟲 -->
   <div class="kg" id="k-grow" data-bg="#F6F4EF">
     <div class="wrap">
-      <div class="kg-head" id="kgHead">
-        <div class="kg-pin">
-          <p class="kg-ln kg-ln1" lang="en">LIFE</p>
-          <p class="kg-ln kg-ln2" lang="en">CYCLE</p>
-        </div>
-      </div>
       <div class="kg-grid" role="table" aria-label="六種蝴蝶的四個階段" data-en-label="Four stages of six butterflies">
         <div class="kg-row kg-hd" role="row"><span></span><span data-en="Egg">卵</span><span data-en="Larva">幼蟲</span><span data-en="Pupa">蛹</span><span data-en="Adult">成蟲</span></div>
         <div class="kg-row">
@@ -274,44 +232,6 @@
       </div>
     </div>
   </div>
-  <!-- 型態分類：捲動形式（同蝴蝶構造）：左邊大字「臺灣的」，右邊輪盤轉到正在介紹的科；左下說明、右下種數與編號 -->
-  <div class="kf" id="k-family" data-bg="#F6F4EF">
-    <div class="ks-pin">
-      <h3 class="sr-only" data-en="Families">型態分類</h3>
-      <p class="ks-k" data-en="CLASSIFICATION — Families">CLASSIFICATION — 型態分類</p>
-      <p class="ks-we" aria-hidden="true"><small lang="en">TAIWAN&rsquo;S</small><b>臺灣的</b></p>
-      <!-- 吃角子老虎機：科名轉輪＋右邊的拉桿；點拉桿 → 轉輪快速滾動，停在下一個科 -->
-      <div class="kf-slot">
-        <div class="kf-col">
-        <div class="kf-box" aria-hidden="true"><div class="kf-reel"><div class="kf-strip" id="kfStrip"><span><small lang="en">HESPERIIDAE</small><b>弄蝶科</b></span><span><small lang="en">PAPILIONIDAE</small><b>鳳蝶科</b></span><span><small lang="en">PIERIDAE</small><b>粉蝶科</b></span><span><small lang="en">LYCAENIDAE</small><b>灰蝶科</b></span><span><small lang="en">NYMPHALIDAE</small><b>蛺蝶科</b></span></div></div></div>
-        <div class="kf-dots" id="kfDots" role="group" aria-label="共 5 個科" data-en-label="5 families in total"></div>
-        </div>
-        <button type="button" class="kf-lever" id="kfLever" aria-label="拉下拉桿，換下一個科" data-en-label="Pull the lever for the next family"><i class="lv-rod"></i><i class="lv-base"></i><i class="lv-ball"></i></button>
-      </div>
-      <div class="ks-info">
-          <div class="ks-pan on"><p class="ks-no">01 — HESPERIIDAE</p><h4 data-en="Skippers">弄蝶科</h4><p class="kf-w" data-en="Plus 2 occasional visitors and vagrants">另有 2 種偶產種、迷蝶</p>
-            <ul class="kf-ul"><li data-en="Broad head with antennae set far apart; the tips are usually swollen and hooked">頭部寬闊，觸角基部分得很開；觸角末梢多膨大彎曲成鉤狀</li><li data-en="Strong flight muscles give a fast, erratic flight — hence the English name &quot;skipper&quot;">飛翔肌強壯，飛行快速又不規則，英文俗名 skipper 由此而來</li><li data-en="Larvae build tube- or bag-shaped shelters and rest inside except when feeding">幼蟲會做筒狀或袋狀的蟲巢，除了取食都在裡面休息</li><li data-en="Girdled pupae, usually formed inside the shelter">蛹為帶蛹，多化蛹在蟲巢內</li></ul></div>
-          <div class="ks-pan"><p class="ks-no">02 — PAPILIONIDAE</p><h4 data-en="Swallowtails">鳳蝶科</h4><p class="kf-w" data-en="About 550–600 species known worldwide">世界已知約 550～600 種</p>
-            <ul class="kf-ul"><li data-en="Mostly medium to large, with club-shaped antennae that curve up at the tip">體型多為中至大型，觸角像高爾夫球桿，末端往上勾</li><li data-en="Only one anal vein in the hindwing, so the abdomen shows when the wings are closed">後翅只有一條臀脈，雙翅閉合時腹部會外露</li><li data-en="Larvae hide an eversible &quot;osmeterium&quot; behind the head that releases a pungent smell to deter enemies">幼蟲前胸藏有可外翻的「臭角」，能放出刺激氣味驅敵</li><li data-en="This site's Lime Swallowtail and Common Mormon belong to this family">本站的花鳳蝶、玉帶鳳蝶屬於這一科</li></ul></div>
-          <div class="ks-pan"><p class="ks-no">03 — PIERIDAE</p><h4 data-en="Whites &amp; Yellows">粉蝶科</h4><p class="kf-w" data-en="More than 1,000 species known worldwide">世界已知超過 1000 種</p>
-            <ul class="kf-ul"><li data-en="Mostly small to medium, with wings mainly white, yellow or orange">體型多為小至中型，翅色以白、黃、橙為主</li><li data-en="Some species have dry- and wet-season forms; the claws at the tip of each leg are forked">部分種類有乾季型與雨季型；跗節末端的爪分成兩叉</li><li data-en="Males often gather to drink at streams or damp ground; an unwilling female spreads her wings flat and raises her abdomen">雄蝶常聚集在溪流或濕地吸水；雌蝶拒絕求偶時會攤平翅膀、高舉腹部</li><li data-en="This site's Great Orange Tip belongs to this family">本站的橙端粉蝶屬於這一科</li></ul></div>
-          <div class="ks-pan"><p class="ks-no">04 — LYCAENIDAE</p><h4 data-en="Blues">灰蝶科</h4><p class="kf-w" data-en="More than 6,000 species worldwide">世界超過 6000 種</p>
-            <ul class="kf-ul"><li data-en="Generally small, including the world's smallest butterflies">體型一般較小，包括世界上最小的蝶種</li><li data-en="Upper and under sides are patterned differently, often with clear differences between the sexes">翅背與腹面的斑紋不同，常有明顯的雌雄二型性</li><li data-en="Many larvae have ant organs that secrete honeydew in exchange for protection by ants">許多幼蟲有「喜蟻器」，分泌蜜露換取螞蟻的保護</li><li data-en="Larvae mostly feed on flowers, fruit and young leaves">幼蟲多以花、果實、嫩葉為食</li></ul></div>
-          <div class="ks-pan"><p class="ks-no">05 — NYMPHALIDAE</p><h4 data-en="Brush-foots">蛺蝶科</h4><p class="kf-w" data-en="More than 6,000 species worldwide; former families such as the danaids and browns are now included">世界超過 6000 種，以往的斑蝶科、蛇目蝶科等都併入此科</p>
-            <ul class="kf-ul"><li data-en="Three ridges under the antennae form two grooves">觸角腹面有 3 條縱稜，形成兩條縱溝</li><li data-en="In most species the forelegs are reduced and held against the chest; they stand on the middle and hind legs">多數前足特化、收在胸前，只用中、後足站立</li><li data-en="Some adults feed on rotting fruit, carrion or dung; some males are territorial">部分成蝶吸食腐果、死屍、排遺，有些雄蝶有領域行為</li><li data-en="This site's Paper Kite, Dwarf Crow, Blue Tiger, Great Eggfly and Orange Oakleaf belong to this family">本站的大白斑蝶、小紫斑蝶、淡紋青斑蝶、幻蛺蝶、枯葉蝶都屬於這一科</li></ul></div>
-      </div>
-      <div class="ks-side">
-        <div class="kf-nums" aria-hidden="true">
-          <div class="kf-n on" data-c="63"><div class="kf-ico"></div><p class="kf-cnt" data-en-html="&lt;b&gt;63&lt;/b&gt; species"><b>63</b> 種</p></div>
-          <div class="kf-n" data-c="31"><div class="kf-ico"></div><p class="kf-cnt" data-en-html="&lt;b&gt;31&lt;/b&gt; species"><b>31</b> 種</p></div>
-          <div class="kf-n" data-c="35"><div class="kf-ico"></div><p class="kf-cnt" data-en-html="&lt;b&gt;35&lt;/b&gt; species"><b>35</b> 種</p></div>
-          <div class="kf-n" data-c="114"><div class="kf-ico"></div><p class="kf-cnt" data-en-html="&lt;b&gt;114&lt;/b&gt; species"><b>114</b> 種</p></div>
-          <div class="kf-n" data-c="130"><div class="kf-ico"></div><p class="kf-cnt" data-en-html="&lt;b&gt;130&lt;/b&gt; species"><b>130</b> 種</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- 標語：大字黑體＋內文 -->
   <div class="kq" id="k-kingdom" data-bg="#F6F4EF">
     <div class="wrap kq-grid">
@@ -337,8 +257,7 @@
     <div class="wrap kfaq-grid">
       <div class="kfaq-l">
         <p class="ed-no">ENEMIES &amp; FACTS</p>
-        <h3 class="kfaq-title" data-en-html="Enemies&lt;br&gt;&amp;amp; Facts">天敵與<br>常識</h3>
-        <p class="kfaq-lead" data-en="What dangers does a butterfly face in its life? When are they easiest to see? Open the list to find out.">蝴蝶的一生會遇到哪些危險？什麼時候最容易看見牠們？點開來看看。</p>
+        <h3 class="kfaq-title" data-tx="lines" data-en="Enemies&#xE000;&amp; Facts">天敵與<br>常識</h3>
       </div>
       <ul class="kfaq-list" id="kfaq">
         <li><button type="button" aria-expanded="false"><span class="q-tag" data-en="Enemy">天敵</span><img class="q-ico" width="30" height="30" src="assets/faq-icons/parasite.png" alt="" aria-hidden="true"><span class="q-t" data-en="Parasitoids">寄生性動物</span><i aria-hidden="true"></i></button>
@@ -380,7 +299,7 @@
           <div><dt data-en="Best viewing">最佳賞蝶</dt><dd>08:00–10:00</dd></div>
         </dl>
         <div class="tri-body">
-          <blockquote class="tri-q" data-en-html="&lt;span class=&quot;tri-mark&quot;&gt;“&lt;/span&gt;Plant flowers, step into the world of butterflies"><span class="tri-mark">“</span>種下花草，走近蝴蝶世界</blockquote>
+          <blockquote class="tri-q" data-en-html="&lt;span class=&quot;tri-mark&quot;&gt;“&lt;/span&gt;Plant flowers, step into the world of butterflies&lt;span class=&quot;tri-mark tri-end&quot;&gt;”&lt;/span&gt;"><span class="tri-mark">“</span>種下花草，走近蝴蝶世界<span class="tri-mark tri-end">”</span></blockquote>
           <p class="tri-p" data-en="Besides playing an important role in the food chain, butterflies are an excellent aid for teaching ecology — for the ecology of butterflies mirrors our own.">蝴蝶除了在食物鏈上扮演著重要角色外，也提供給人類作為極佳的生態教學之助材，因蝴蝶的生態，正反應出人類的生態。</p>
         </div>
       </div>
@@ -418,13 +337,12 @@
     </div>
   </div>
 </section>
-<!-- 6. 地圖：版面參考滿版圖片＋左下大標，目前用淺灰色字「地圖」佔位，沒有轉場動畫。
-     之後地圖另開網頁製作：把 href 換成地圖網頁網址、拿掉 data-todo；底圖換成縮圖時放進 .zi-bg -->
-<a class="zi k-dark" id="map" href="#" data-todo data-sec aria-label="前往探索：地圖" data-en-label="Explore: Map">
+<!-- 6. 地圖：版面參考滿版圖片＋左下大標；點整個區塊開啟地圖網站 ../butterfly-map/（獨立專案；上傳後換成正式網址）（木生昆蟲館 3D 生態園區）。
+     子網頁做好後，截一張縮圖放進 .zi-bg 當底圖 -->
+<a class="zi k-dark" id="map" href="../butterfly-map/index.html" data-sec aria-label="前往探索：生態園區APP" data-en-label="Explore: Eco Park App">
   <div class="zi-bg" aria-hidden="true"></div>
   <div class="zi-top" aria-hidden="true"><span data-en="Butterfly Shadows // Map">蝶影浮生 // 地圖</span><span data-en="[ explore ]">[ 前往探索 ]</span></div>
-  <p class="zi-todo" data-en="Coming soon">待開發</p>
-  <p class="zi-t" aria-hidden="true"><small lang="en">MAP</small><b data-en="Map">地圖</b></p>
+  <p class="zi-todo" data-en="Eco Park App">生態園區APP</p>
   <span class="zi-cur" aria-hidden="true" data-en="Explore">前往探索</span>
 </a>
 
@@ -450,10 +368,11 @@
 <!-- 轉場：從畫面下方中間飛出的蝴蝶群 -->
 <div class="swarm" id="swarm" aria-hidden="true"></div>
 
-<script src="js/main.js?v=20261118a"></script>
-<script src="js/fx.js?v=20261118a"></script>
-<script src="js/dots.js?v=20261118a"></script>
+<script src="js/main.js?v=20261123l"></script>
+<script src="js/fx.js?v=20261123g"></script>
+<script src="js/dots.js?v=20261123b"></script>
 <script src="js/hero-depth.js?v=20261118a"></script>
 <script src="js/pupa.js?v=20261118a"></script>
+<script src="js/leaves.js?v=20261118b"></script>
 </body>
 </html>
