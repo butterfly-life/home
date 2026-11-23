@@ -2419,3 +2419,14 @@ body.has-cursor .cursor{display:block}
 .st4-next h3{margin:0;font:700 clamp(22px,2.2vw,32px)/1.4 var(--title);letter-spacing:.08em;color:#2F5A2E;white-space:nowrap}
 .st4-next p{margin:10px 0 0;font-size:clamp(13px,.95vw,15px);letter-spacing:.12em;color:var(--txt-mute)}
 @media (max-width:860px){.st4-list{padding-bottom:calc(12vh + 110px)}.st4-next h3{font-size:clamp(18px,5.4vw,24px)}}
+
+/* 2026-11-23：摘要三段改成階梯式錯位排列 —— 第一段偏左上、第二段居中、第三段偏右下（每段靠左對齊） */
+@media (min-width:861px){
+  #story .story-grid{padding-top:6vh}
+  #story .story-body{width:min(1100px,90vw);text-align:left}
+  #story .story-body p,#story .story-first{width:min(50%,560px)}
+  #story .story-body p:nth-child(1){margin-left:8%}
+  #story .story-body p:nth-child(2){margin-left:22%}
+  #story .story-body p:nth-child(3){margin-left:42%}
+  #story .story-body p+p{margin-top:clamp(28px,5vh,56px)}
+}
