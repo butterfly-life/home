@@ -600,7 +600,7 @@ body.has-cursor .cursor{display:block}
 .bracket a::after{content:"]";right:-14px;transform:translateX(-8px)}
 .bracket a:hover::before,.bracket a:hover::after,.bracket a:focus-visible::before,.bracket a:focus-visible::after{opacity:1;transform:none}
 .copy{margin-top:48px;padding-top:24px;border-top:1px solid rgba(128,120,108,.2);display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:12px}
-.copy p{opacity:.65}
+.copy p{opacity:.65;letter-spacing:.06em;word-spacing:.15em}
 /* 回到頂端：按鈕，滑過時反白 */
 .top-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border:1px solid currentColor;border-radius:999px;font-size:13px;letter-spacing:.15em;transition:background .3s ease,color .3s ease}
 .top-btn span{transition:transform .3s ease}
@@ -1872,7 +1872,7 @@ body.has-cursor .cursor{display:block}
 .zi-t{color:var(--txt)}
 .zi-t small{color:var(--txt-mute)}
 .zi-todo{color:var(--txt-mute)}
-.zi-cur{color:var(--txt);background:#A6CF84}
+.zi-cur{color:var(--txt);background:#A6CF84;border:1px solid #000}
 
 /* ── 頁尾（原本深色）：淺暖色底、黑字；中心光暈與游標光暈改成柔和的色彩 ── */
 .foot{background:#ECE7DC;--fc:var(--txt)}
@@ -2046,7 +2046,7 @@ body.has-cursor .cursor{display:block}
 .foot-grid{border-top-color:rgba(234,228,216,.18)}
 .copy{border-top-color:rgba(234,228,216,.14)}
 .foot-en{opacity:.7}
-.copy p{opacity:.65}
+.copy p{opacity:.65;letter-spacing:.06em;word-spacing:.15em}
 .top-btn:hover,.top-btn:focus-visible{background:#A6CF84;color:var(--dark);border-color:#A6CF84}
 .fcol a:hover{color:#A6CF84}
 /* 導覽列碰到深色頁尾：淺色字、LOGO 反白 */
