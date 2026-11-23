@@ -231,7 +231,17 @@
       `<dt>${L('前翅長', 'Forewing')}</dt><dd>${d.wing} mm</dd><dt>${L('海拔', 'Altitude')}</dt><dd>${d.alt} m</dd></dl>`;
   };
   const showInfo = () => { renderInfo(); info.classList.add('on'); };
+  // 背景大字：目前這隻蝴蝶的名稱（依語言）；字數越多字越小，整排不超出畫面
+  const bgTxt = document.getElementById('pupaBg');
+  const renderBg = () => {
+    if (!bgTxt) return;
+    const name = (isEn() ? DATA[cur].en : DATA[cur].zh).name;
+    const w = isEn() ? name.length * .56 : name.length;        // 英文字母約半個中文字寬
+    bgTxt.textContent = name;
+    bgTxt.style.fontSize = `min(${Math.min(26, 88 / w).toFixed(2)}vw, 420px)`;
+  };
   const renderThumbs = () => {
+    renderBg();
     thumbs.innerHTML = DATA.map((d, i) =>
       `<button type="button" class="pz-t${i === cur ? ' on' : ''}${d.done ? ' done' : ''}" data-i="${i}" aria-pressed="${i === cur}" aria-label="${(isEn() ? d.en : d.zh).name}${d.done ? L('（已羽化）', ' (emerged)') : ''}">` +
       `<img src="assets/pupae/pupa${i + 1}.png?v=2" alt=""></button>`).join('');

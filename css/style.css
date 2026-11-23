@@ -2407,3 +2407,6 @@ body.has-cursor .cursor{display:block}
 .zi::after{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:0;pointer-events:none;transition:opacity .4s ease}
 .zi:hover::after,.zi.hover::after,.zi:focus-visible::after{opacity:.25}
 .zi-top{z-index:2}
+
+/* 2026-11-23：懸蛹背景大字從「PUPA」改成目前這隻蝴蝶的名稱（js/pupa.js 依字數調字級），字重改細 */
+.pupa-bg{font-weight:300;letter-spacing:.04em}
