@@ -37,26 +37,6 @@
     });
     plants.forEach(p => p.g.setAttribute('filter', `url(#lfDull${STEPS})`));
   };
-  /* ---------- 像相機對焦框一樣的灰色矩形：在首頁上不規律地快速跳來跳去 ---------- */
-  const scans = [0, 1].map(() => {
-    const el = document.createElement('i');
-    el.className = 'hd-scan';
-    el.setAttribute('aria-hidden', 'true');
-    hero.appendChild(el);
-    return { el, next: 0 };
-  });
-  const drawScans = now => {
-    for (const s of scans) {
-      if (now < s.next) continue;
-      const W = innerWidth, H = innerHeight;
-      const w = 90 + Math.random() * Math.min(420, W * .3), h = w * (.55 + Math.random() * .6);
-      const x = Math.random() * (W - w), y = 200 + Math.random() * Math.max(10, H - 400 - h);
-      const show = Math.random() > .18;                  // 偶爾消失一下
-      s.el.style.cssText = `width:${w.toFixed(0)}px;height:${h.toFixed(0)}px;transform:translate(${x.toFixed(0)}px,${y.toFixed(0)}px);opacity:${show ? 1 : 0}`;
-      s.next = now + 90 + Math.random() * (Math.random() < .3 ? 900 : 260);   // 大多很快換位置，偶爾停久一點
-    }
-  };
-
   const NEAR = 190;                                     // 游標多近算「靠近」（px）
   let lastColor = 0;
   const colorPlants = now => {
@@ -91,7 +71,6 @@
     if (front) front.style.transform = `translate(${(mx * 24).toFixed(1)}px,${(my * 17).toFixed(1)}px)`;
     if (text) text.style.transform = `translate(${(-mx * 4).toFixed(1)}px,${(-my * 3).toFixed(1)}px)`;
     colorPlants(now);
-    drawScans(now);
   };
   /* ---------- 點擊首頁：一道淡淡的光從點擊處斜斜掃過畫面＋LOGO 上的植物像被風吹過一下 ---------- */
   // 首頁上面疊著摘要的捲動軌道（透明但會擋住點擊），所以改聽整個頁面的點擊，只在停在首頁時才觸發
