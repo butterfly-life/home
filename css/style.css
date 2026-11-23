@@ -2423,8 +2423,9 @@ body.has-cursor .cursor{display:block}
 /* 2026-11-23：摘要三段改成階梯式錯位排列 —— 第一段偏左上、第二段居中、第三段偏右下（每段靠左對齊） */
 @media (min-width:861px){
   #story .story-grid{padding-top:6vh}
-  #story .story-body{width:min(1100px,90vw);text-align:left}
-  #story .story-body p,#story .story-first{width:min(50%,560px)}
+  #story .story-body{width:min(1100px,90vw);max-width:none;text-align:left}
+  /* 每段約 32 個字一行 → 三段都排成兩行 */
+  #story .story-body p,#story .story-first{width:min(33em,56%)}
   #story .story-body p:nth-child(1){margin-left:8%}
   #story .story-body p:nth-child(2){margin-left:22%}
   #story .story-body p:nth-child(3){margin-left:42%}
